@@ -1,3 +1,0 @@
-variables:
-  cidr_block: "cidr_block_from_config"
-  ma_super_variable: "meilleure variable ever"
