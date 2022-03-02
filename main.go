@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"github.com/hashicorp/hcl/v2"
 	"github.com/hashicorp/hcl/v2/hclparse"
-	"github.com/samy-dougui/tftest/internal/filter"
 	"github.com/samy-dougui/tftest/internal/loader"
 	"github.com/samy-dougui/tftest/internal/rule"
 	"os"
@@ -22,29 +21,18 @@ func main() {
 	loader.Init()
 
 	body, diagHCLFile := loader.LoadHCLFile("./data/policy.hcl")
+	plan, _ := loader.LoadPlan("tfplan.json")
 	diags = append(diags, diagHCLFile...)
 
-	var filterCondition string
 	content, _ := body.Content(configFileSchema)
 	for _, block := range content.Blocks {
 		switch block.Type {
 		case "rule":
-			partialContent, _, resourceDiags := block.Body.PartialContent(rule.BlockSchema)
-			diags = append(diags, resourceDiags...)
-			//attrs := partialContent.Attributes
-			//for name, attr := range attrs {
-			//	value, _ := attr.Expr.Value(nil)
-			//	fmt.Printf("The parameters %v for the rule %v has the value %v\n", name, block.Labels[0], value.AsString())
-			//}
-			for _, a := range partialContent.Blocks {
-				filterContent, _, _ := a.Body.PartialContent(filter.Schema)
-				for name, attr := range filterContent.Attributes {
-					if name == "type" {
-						val, _ := attr.Expr.Value(nil)
-						filterCondition = val.AsString()
-					}
-				}
-			}
+			var rule rule.Rule
+			ruleDiags := rule.Init(block)
+			diags = append(diags, ruleDiags...)
+			applyDiags := rule.Apply(plan)
+			diags = append(diags, applyDiags...)
 		default:
 			continue
 		}
@@ -52,13 +40,6 @@ func main() {
 	errDiag := wr.WriteDiagnostics(diags)
 	if errDiag != nil {
 		fmt.Printf("Error while writing the diagnostics: %v", errDiag)
-	}
-
-	plan, _ := loader.LoadPlan("tfplan.json")
-	for _, ressourceChange := range plan.ResourceChanges {
-		if ressourceChange.Type == filterCondition {
-			fmt.Println(ressourceChange.Address)
-		}
 	}
 
 }
