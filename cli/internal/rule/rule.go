@@ -3,8 +3,8 @@ package rule
 import (
 	"fmt"
 	"github.com/hashicorp/hcl/v2"
-	"github.com/samy-dougui/tftest/internal/filter"
-	"github.com/samy-dougui/tftest/internal/loader"
+	filter2 "github.com/samy-dougui/tftest/cli/internal/filter"
+	loader2 "github.com/samy-dougui/tftest/cli/internal/loader"
 )
 
 type Rule struct {
@@ -44,7 +44,7 @@ func (r *Rule) Init(block *hcl.Block) hcl.Diagnostics {
 	for _, my_block := range ruleBody.Blocks {
 		switch my_block.Type {
 		case "filter":
-			filterContent, _, _ := my_block.Body.PartialContent(filter.Schema)
+			filterContent, _, _ := my_block.Body.PartialContent(filter2.Schema)
 			for _, filterAttribute := range filterContent.Attributes {
 				switch filterAttribute.Name {
 				case "type":
@@ -59,7 +59,7 @@ func (r *Rule) Init(block *hcl.Block) hcl.Diagnostics {
 	return diags
 }
 
-func (r *Rule) Apply(plan *loader.Plan) hcl.Diagnostics {
+func (r *Rule) Apply(plan *loader2.Plan) hcl.Diagnostics {
 	for _, ressourceChange := range plan.ResourceChanges {
 		if ressourceChange.Type == r.Filter.Type {
 			fmt.Printf("Resource %v, captured by ryle %v, on filter %v\n", ressourceChange.Address, r.Name, r.Filter.Type)

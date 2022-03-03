@@ -48,6 +48,7 @@ func (l *Loader) LoadHCLFile(path string) (hcl.Body, hcl.Diagnostics) {
 }
 
 func (l *Loader) LoadPlan(path string) (*Plan, hcl.Diagnostics) {
+	// TODO: validate that the path points to a valid json file
 	jsonFileBytes, err := l.FileSystem.ReadFile(path)
 	if err != nil {
 		return nil, hcl.Diagnostics{
