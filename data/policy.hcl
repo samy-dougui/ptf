@@ -15,3 +15,16 @@ rule "my_second_rule" {
   severity      = "error"
   error_message = ""
 }
+
+#rule "my_second_rule" {
+#  filter {
+#    type = "azurerm_resource_group"
+#  }
+#  condition {
+#    attributes = ""
+#    operator = ""
+#    values = '[""] or ""'
+#  }
+#  severity      = "error"
+#  error_message = ""
+#}

@@ -3,8 +3,8 @@ package rule
 import (
 	"fmt"
 	"github.com/hashicorp/hcl/v2"
-	filter2 "github.com/samy-dougui/tftest/cli/internal/filter"
 	loader2 "github.com/samy-dougui/tftest/cli/internal/loader"
+	"github.com/samy-dougui/tftest/cli/internal/rule/filter"
 )
 
 type Rule struct {
@@ -44,13 +44,12 @@ func (r *Rule) Init(block *hcl.Block) hcl.Diagnostics {
 	for _, my_block := range ruleBody.Blocks {
 		switch my_block.Type {
 		case "filter":
-			filterContent, _, _ := my_block.Body.PartialContent(filter2.Schema)
+			filterContent, _, _ := my_block.Body.PartialContent(filter.Schema)
 			for _, filterAttribute := range filterContent.Attributes {
 				switch filterAttribute.Name {
 				case "type":
 					filterType, _ := filterAttribute.Expr.Value(nil)
 					my_filter.Type = filterType.AsString()
-
 				}
 			}
 		}
