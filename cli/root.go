@@ -7,19 +7,14 @@ import (
 	loader2 "github.com/samy-dougui/tftest/cli/internal/loader"
 	"github.com/samy-dougui/tftest/cli/internal/rule"
 	"github.com/spf13/cobra"
+	"log"
 	"os"
+	"path"
 )
 
-var rootCmd = &cobra.Command{
-	Use:   "tftest",
-	Short: "Tftest helps you test your terraform plan",
-	Long:  `Tftest is a cli tool that helps you test your terraform plan through HCL config file in a declarative manner.`,
-	Run: func(cmd *cobra.Command, args []string) {
-		planPath, _ := cmd.Flags().GetString("plan")
-		// TODO: add global dir flag
-		//dirPath, _ := cmd.Flags().GetString("dir")
-		run(planPath)
-	},
+func init() {
+	rootCmd.Flags().String("plan", "tfplan.json", "Terraform plan that needs to be tested")
+	rootCmd.Flags().String("chdir", ".", "Directory where the policy files are")
 }
 
 func Execute() {
@@ -29,11 +24,18 @@ func Execute() {
 	}
 }
 
-func init() {
-	rootCmd.Flags().String("plan", "tfplan.json", "Terraform plan that needs to be tested")
+var rootCmd = &cobra.Command{
+	Use:   "tftest",
+	Short: "Tftest helps you test your terraform plan",
+	Long:  `Tftest is a cli tool that helps you test your terraform plan through HCL config file in a declarative manner.`,
+	Run: func(cmd *cobra.Command, args []string) {
+		planPath, _ := cmd.Flags().GetString("plan")
+		dirPath, _ := cmd.Flags().GetString("chdir")
+		run(planPath, dirPath)
+	},
 }
 
-func run(planPath string) {
+func run(planPath string, dirPath string) {
 	wr := hcl.NewDiagnosticTextWriter(
 		os.Stdout,                    // writer to send messages to
 		hclparse.NewParser().Files(), // the parser's file cache, for source snippets
@@ -44,9 +46,18 @@ func run(planPath string) {
 	var loader loader2.Loader
 	loader.Init()
 
-	body, diagHCLFile := loader.LoadHCLFile("./data/policy.hcl")
-	plan, _ := loader.LoadPlan(planPath)
+	body, diagHCLFile := loader.LoadHCLFile(path.Join(path.Clean(dirPath), "policy.hcl"))
+	plan, diagPlanFile := loader.LoadPlan(planPath)
 	diags = append(diags, diagHCLFile...)
+	diags = append(diags, diagPlanFile...)
+	if diags.HasErrors() {
+		err := wr.WriteDiagnostics(diags)
+		if err != nil {
+			log.Fatal("Unexpected error")
+			return
+		}
+		return
+	}
 
 	content, _ := body.Content(configFileSchema)
 	for _, block := range content.Blocks {
