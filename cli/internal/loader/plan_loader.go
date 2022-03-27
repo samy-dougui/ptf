@@ -22,10 +22,10 @@ type ResourceChange struct {
 }
 
 type Change struct {
-	Actions         []string    `json:"actions"`
-	Before          interface{} `json:"before"`
-	After           interface{} `json:"after"`
-	AfterUnknown    interface{} `json:"after_unknown"`
-	BeforeSensitive interface{} `json:"before_sensitive"`
-	AfterSensitive  interface{} `json:"after_sensitive"`
+	Actions         []string               `json:"actions"`
+	Before          map[string]interface{} `json:"before"`
+	After           map[string]interface{} `json:"after"`
+	AfterUnknown    interface{}            `json:"after_unknown"`
+	BeforeSensitive interface{}            `json:"before_sensitive"`
+	AfterSensitive  interface{}            `json:"after_sensitive"`
 }

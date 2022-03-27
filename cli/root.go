@@ -13,18 +13,11 @@ import (
 )
 
 func init() {
-	rootCmd.Flags().String("plan", "tfplan.json", "Terraform plan that needs to be tested")
-	rootCmd.Flags().String("chdir", ".", "Directory where the policy files are")
+	RootCmd.Flags().String("plan", "tfplan.json", "Terraform plan that needs to be tested")
+	RootCmd.Flags().String("chdir", ".", "Directory where the policy files are")
 }
 
-func Execute() {
-	if err := rootCmd.Execute(); err != nil {
-		fmt.Println(err)
-		os.Exit(1)
-	}
-}
-
-var rootCmd = &cobra.Command{
+var RootCmd = &cobra.Command{
 	Use:   "tftest",
 	Short: "Tftest helps you test your terraform plan",
 	Long:  `Tftest is a cli tool that helps you test your terraform plan through HCL config file in a declarative manner.`,
