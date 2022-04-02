@@ -6,83 +6,74 @@ import (
 	loader2 "github.com/samy-dougui/tftest/cli/internal/loader"
 	"github.com/samy-dougui/tftest/cli/internal/rule/condition"
 	"github.com/samy-dougui/tftest/cli/internal/rule/filter"
-	"strings"
 )
 
 type Rule struct {
 	Name         string
 	Severity     string
 	ErrorMessage string
-	Filter       Filter
-	Condition    Condition
-}
-
-type Filter struct {
-	Type string
-}
-
-type Condition struct {
-	Attributes string
+	Filter       filter.Filter
+	Condition    condition.Condition
 }
 
 func (r *Rule) Init(block *hcl.Block) hcl.Diagnostics {
 	var diags hcl.Diagnostics
+	var ruleFilter filter.Filter
+	var ruleCondition condition.Condition
+
 	r.Name = block.Labels[0]
-	ruleBody, _, _ := block.Body.PartialContent(BlockSchema)
+	ruleBody, _, diagInitRule := block.Body.PartialContent(BlockSchema)
+	diags = append(diags, diagInitRule...)
 
 	for _, attribute := range ruleBody.Attributes {
 		switch attribute.Name {
 		case "severity":
-			severity, _ := attribute.Expr.Value(nil)
+			severity, diagSeverity := attribute.Expr.Value(nil)
+			diags = append(diags, diagSeverity...)
 			r.Severity = severity.AsString()
 		case "error_message":
-			errorMessage, _ := attribute.Expr.Value(nil)
+			errorMessage, diagErrorMessage := attribute.Expr.Value(nil)
+			diags = append(diags, diagErrorMessage...)
 			r.ErrorMessage = errorMessage.AsString()
 		default:
 			continue
 		}
 	}
 
-	var my_filter Filter
-	var my_condition Condition
-	for _, my_block := range ruleBody.Blocks {
-		switch my_block.Type {
+	for _, myBlock := range ruleBody.Blocks {
+		switch myBlock.Type {
 		case "filter":
-			filterContent, _, _ := my_block.Body.PartialContent(filter.Schema)
-			for _, filterAttribute := range filterContent.Attributes {
-				switch filterAttribute.Name {
-				case "type":
-					filterType, _ := filterAttribute.Expr.Value(nil)
-					my_filter.Type = filterType.AsString()
-				}
-			}
+			diagInitFilter := ruleFilter.Init(myBlock)
+			diags = append(diags, diagInitFilter...)
 		case "condition":
-			conditionContent, _, _ := my_block.Body.PartialContent(condition.Schema)
-			for _, conditionAttribute := range conditionContent.Attributes {
-				switch conditionAttribute.Name {
-				case "attributes":
-					conditionAttributes, _ := conditionAttribute.Expr.Value(nil)
-					my_condition.Attributes = conditionAttributes.AsString()
-				}
-			}
+			diagInitCondition := ruleCondition.Init(myBlock)
+			diags = append(diags, diagInitCondition...)
 		}
 	}
-	r.Filter = my_filter
-	r.Condition = my_condition
+	r.Filter = ruleFilter
+	r.Condition = ruleCondition
 	return diags
 }
 
 func (r *Rule) Apply(plan *loader2.Plan) hcl.Diagnostics {
-	for _, ressourceChange := range plan.ResourceChanges {
-		if ressourceChange.Type == r.Filter.Type {
-			var _attribute = ressourceChange.Change.After
-			var nestedAttributes = strings.Split(r.Condition.Attributes, ".")
-			for _, nestedAttribute := range nestedAttributes[:len(nestedAttributes)-1] {
-				_attribute = _attribute[nestedAttribute].(map[string]interface{})
+	for _, resourceChange := range plan.ResourceChanges {
+		if isCapturedByFilter := r.Filter.Apply(&resourceChange); isCapturedByFilter {
+			isValid := r.Condition.Check(&resourceChange)
+			if !isValid {
+				var severity hcl.DiagnosticSeverity
+				if r.Severity == "warning" {
+					severity = hcl.DiagWarning
+				} else {
+					severity = hcl.DiagError
+				}
+				return hcl.Diagnostics{
+					{
+						Severity: severity,
+						Summary:  "Resource doesn't follow the rule",
+						Detail:   fmt.Sprintf("The resource %v doesn't follow the rule %v. Its attribute %v should be %v.", resourceChange.Address, r.Name, r.Condition.Attributes, r.Condition.Values),
+					},
+				}
 			}
-			var attribute = _attribute[nestedAttributes[len(nestedAttributes)-1]]
-			fmt.Printf("Resource %v, captured by ryle %v, on filter %v\n", ressourceChange.Address, r.Name, r.Filter.Type)
-			fmt.Printf("Attribute %v = %v\n", r.Condition.Attributes, attribute)
 		}
 	}
 	return nil
