@@ -1,11 +1,12 @@
-rule "my_first_rule" {
+rule "azure storage container metadata" {
   filter {
     type = "azurerm_storage_container"
   }
   condition {
-    attributes = "metadata.hdi_version"
-    values     = "2013-09-01"
+    attribute = "metadata.hdi_version"
+    operator   = "="
+    values     = "2013-09-02"
   }
-  severity      = "warning"
+  severity      = "error"
   error_message = ""
 }

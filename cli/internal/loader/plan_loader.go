@@ -1,5 +1,7 @@
 package loader
 
+import "strings"
+
 // Plan "mode" can be "managed", for resources, or "data", for data resources
 type Plan struct {
 	FormatVersion    string           `json:"format_version"`
@@ -28,4 +30,14 @@ type Change struct {
 	AfterUnknown    interface{}            `json:"after_unknown"`
 	BeforeSensitive interface{}            `json:"before_sensitive"`
 	AfterSensitive  interface{}            `json:"after_sensitive"`
+}
+
+func (r *ResourceChange) GetAttribute(attribute string) interface{} {
+	// TODO: it's only for the After, should be configurable
+	var _attribute = r.Change.After
+	var nestedAttributes = strings.Split(attribute, ".")
+	for _, nestedAttribute := range nestedAttributes[:len(nestedAttributes)-1] {
+		_attribute = _attribute[nestedAttribute].(map[string]interface{})
+	}
+	return _attribute[nestedAttributes[len(nestedAttributes)-1]]
 }
