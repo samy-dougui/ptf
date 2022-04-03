@@ -25,8 +25,8 @@ func (f *Filter) Init(block *hcl.Block) hcl.Diagnostics {
 }
 
 // The Filtering logic should be included in this function
-func (f *Filter) Apply(ressource *loader.ResourceChange) bool {
-	return f.Type == ressource.Type
+func (f *Filter) Apply(resource *loader.ResourceChange) bool {
+	return f.Type == resource.Type
 }
 
 var filterAttributes = []hcl.AttributeSchema{
