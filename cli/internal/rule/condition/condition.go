@@ -3,12 +3,13 @@ package condition
 import (
 	"github.com/hashicorp/hcl/v2"
 	"github.com/samy-dougui/tftest/cli/internal/loader"
+	"github.com/zclconf/go-cty/cty"
 )
 
 type Condition struct {
 	Attribute string
 	Operator  string
-	Values    string
+	Values    cty.Value
 }
 
 func (c *Condition) Init(block *hcl.Block) hcl.Diagnostics {
@@ -22,7 +23,8 @@ func (c *Condition) Init(block *hcl.Block) hcl.Diagnostics {
 			c.Attribute = conditionAttribute.AsString()
 		case "values":
 			conditionValues, _ := conditionAttribute.Expr.Value(nil)
-			c.Values = conditionValues.AsString()
+			// c.Values = conditionValues.AsString()
+			c.Values = conditionValues
 		case "operator":
 			conditionOperator, _ := conditionAttribute.Expr.Value(nil)
 			c.Operator = conditionOperator.AsString()
@@ -33,11 +35,11 @@ func (c *Condition) Init(block *hcl.Block) hcl.Diagnostics {
 
 func (c *Condition) Check(resource *loader.ResourceChange) bool {
 	var attribute = resource.GetAttribute(c.Attribute)
-	if attribute != nil {
-		var operatorCheck = OperatorMap[c.Operator](attribute, c.Values)
-		return operatorCheck
-	}
-	return false
+	//if attribute != nil {
+	var operatorCheck = OperatorMap[c.Operator](attribute, c.Values)
+	return operatorCheck
+	//}
+	//return false
 }
 
 var conditionAttributes = []hcl.AttributeSchema{

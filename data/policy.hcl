@@ -5,7 +5,7 @@ rule "azure storage container metadata" {
   condition {
     attribute = "metadata.hdi_version"
     operator   = "="
-    values     = "2013-09-02"
+    values     = 2013
   }
   severity      = "error"
   error_message = ""

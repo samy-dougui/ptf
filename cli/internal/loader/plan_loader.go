@@ -1,6 +1,8 @@
 package loader
 
-import "strings"
+import (
+	"strings"
+)
 
 // Plan "mode" can be "managed", for resources, or "data", for data resources
 type Plan struct {
