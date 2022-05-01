@@ -2,55 +2,99 @@ package condition
 
 import (
 	"github.com/zclconf/go-cty/cty"
+	"github.com/zclconf/go-cty/cty/gocty"
+	"log"
 )
 
-// TODO: find a way to have dynamic type in the configuration
-// We want to have whatever type in the rule.hcl file
-// Read the terraform plan, get the type of the attribute we are testing
-// Try to convert the value we get from the rule.hcl file to the type we are getting from the json
-// if we can't: raise an error saying the plan value does not have the correct type
-// if we can: convert the value from the rule.hcl to the attribute file and execute the operator function
+// TODO: Recover from panic error handling
+// TODO: Have a proper formatting for error
 
 var OperatorMap = map[string]func(interface{}, cty.Value) bool{
-	"=": Equality,
-	//">":  Superior,
-	//">=": SuperiorOrEqual,
-	//"<":  Inferior,
-	//"<=": InferiorOrEqual,
+	"=":  Equality,
+	">":  SuperiorStrict,
+	">=": SuperiorOrEqual,
+	"<":  InferiorStrict,
+	"<=": InferiorOrEqual,
 }
 
 func Equality(attribute interface{}, expectedValue cty.Value) bool {
-	//attributeType, _ := gocty.ToCtyValue(attribute, cty.String)
-	//fmt.Println(attributeType.Type().)
-	//fmt.Println(expectedValue.Type())
-	//fmt.Println(expectedValue.Equals(attribute))
-	//switch t := attribute.(type) {
-	//case int:
-	//	println("int")
-	//	attributeTyped := attribute.(int)
-	//	expectedValueTyped := expectedValue.AsString()
-	//
-	//case string:
-	//	println("string")
-	//	attributeTyped = attribute.(string)
-	//default:
-	//	log.Printf("unexpected type %v", t)
-	//}
-	return false
+	switch expectedValue.Type() {
+	case cty.Number:
+		var expectedValueTyped float64
+		err := gocty.FromCtyValue(expectedValue, &expectedValueTyped)
+		if err != nil {
+			log.Println(err)
+		}
+		return attribute.(float64) == expectedValueTyped
+	case cty.String:
+		var expectedValueTyped string
+		err := gocty.FromCtyValue(expectedValue, &expectedValueTyped)
+		if err != nil {
+			log.Println(err)
+		}
+		return attribute.(string) == expectedValueTyped
+	default:
+		log.Println("Default value")
+		return false
+	}
 }
 
-//func Superior(attribute interface{}, expectedValue cty.Value) bool {
-//	return attribute.(int) > expectedValue.(int)
-//}
-//
-//func SuperiorOrEqual(attribute interface{}, expectedValue cty.Value) bool {
-//	return attribute.(int) >= expectedValue.(int)
-//}
-//
-//func Inferior(attribute interface{}, expectedValue cty.Value) bool {
-//	return attribute.(int) < expectedValue.(int)
-//}
-//
-//func InferiorOrEqual(attribute interface{}, expectedValue cty.Value) bool {
-//	return attribute.(int) <= expectedValue.(int)
-//}
+func SuperiorStrict(attribute interface{}, expectedValue cty.Value) bool {
+	switch expectedValue.Type() {
+	case cty.Number:
+		var expectedValueTyped float64
+		err := gocty.FromCtyValue(expectedValue, &expectedValueTyped)
+		if err != nil {
+			log.Println(err)
+		}
+		return attribute.(float64) > expectedValueTyped
+	default:
+		log.Println("Only allowed type: number")
+		return false
+	}
+}
+
+func SuperiorOrEqual(attribute interface{}, expectedValue cty.Value) bool {
+	switch expectedValue.Type() {
+	case cty.Number:
+		var expectedValueTyped float64
+		err := gocty.FromCtyValue(expectedValue, &expectedValueTyped)
+		if err != nil {
+			log.Println(err)
+		}
+		return attribute.(float64) >= expectedValueTyped
+	default:
+		log.Println("Only allowed type: number")
+		return false
+	}
+}
+
+func InferiorStrict(attribute interface{}, expectedValue cty.Value) bool {
+	switch expectedValue.Type() {
+	case cty.Number:
+		var expectedValueTyped float64
+		err := gocty.FromCtyValue(expectedValue, &expectedValueTyped)
+		if err != nil {
+			log.Println(err)
+		}
+		return attribute.(float64) < expectedValueTyped
+	default:
+		log.Println("Only allowed type: number")
+		return false
+	}
+}
+
+func InferiorOrEqual(attribute interface{}, expectedValue cty.Value) bool {
+	switch expectedValue.Type() {
+	case cty.Number:
+		var expectedValueTyped float64
+		err := gocty.FromCtyValue(expectedValue, &expectedValueTyped)
+		if err != nil {
+			log.Println(err)
+		}
+		return attribute.(float64) <= expectedValueTyped
+	default:
+		log.Println("Only allowed type: number")
+		return false
+	}
+}

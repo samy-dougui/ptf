@@ -23,7 +23,6 @@ func (c *Condition) Init(block *hcl.Block) hcl.Diagnostics {
 			c.Attribute = conditionAttribute.AsString()
 		case "values":
 			conditionValues, _ := conditionAttribute.Expr.Value(nil)
-			// c.Values = conditionValues.AsString()
 			c.Values = conditionValues
 		case "operator":
 			conditionOperator, _ := conditionAttribute.Expr.Value(nil)
