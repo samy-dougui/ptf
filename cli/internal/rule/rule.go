@@ -79,7 +79,7 @@ func (r *Rule) FormatError(resource *loader2.ResourceChange) hcl.Diagnostic {
 	return hcl.Diagnostic{
 		Severity: severity,
 		Summary:  fmt.Sprintf("Resource %v doesn't follow the rule %v", resource.Address, r.Name),
-		Detail:   fmt.Sprintf("The resource %v doesn't follow the rule %v. Its attribute %v should be %v.", resource.Address, r.Name, r.Condition.Attribute, r.Condition.Values),
+		Detail:   fmt.Sprintf("The resource %v doesn't follow the rule %v. Its attribute %v should be %v.", resource.Address, r.Name, r.Condition.Attribute, r.Condition.Values.GoString()),
 	}
 }
 

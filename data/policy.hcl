@@ -1,12 +1,26 @@
-rule "azure storage container metadata" {
+rule "azure_storage_container_name_pattern" {
+  filter {
+    type = "azurerm_storage_container"
+  }
+  condition {
+    attribute = "name"
+    operator  = "re"
+    values    = "([aA-zZ]+)_([aA-zZ]+)_([aA-zZ]+)"
+  }
+  severity      = "error"
+  error_message = ""
+}
+
+
+rule "azure_storage_container_metadata" {
   filter {
     type = "azurerm_storage_container"
   }
   condition {
     attribute = "metadata.hdi_version"
-    operator   = "="
-    values     = 2013
+    operator  = "="
+    values    = "2013"
   }
-  severity      = "error"
+  severity      = "warning"
   error_message = ""
 }

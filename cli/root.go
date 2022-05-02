@@ -66,6 +66,9 @@ func run(planPath string, dirPath string) {
 		}
 	}
 	errDiag := wr.WriteDiagnostics(diags)
+	if diags.HasErrors() {
+		os.Exit(1)
+	}
 	if errDiag != nil {
 		fmt.Printf("Error while writing the diagnostics: %v", errDiag)
 	}

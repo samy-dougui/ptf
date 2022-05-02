@@ -34,11 +34,11 @@ func (c *Condition) Init(block *hcl.Block) hcl.Diagnostics {
 
 func (c *Condition) Check(resource *loader.ResourceChange) bool {
 	var attribute = resource.GetAttribute(c.Attribute)
-	//if attribute != nil {
-	var operatorCheck = OperatorMap[c.Operator](attribute, c.Values)
-	return operatorCheck
-	//}
-	//return false
+	if attribute != nil {
+		var operatorCheck = OperatorMap[c.Operator](attribute, c.Values)
+		return operatorCheck
+	}
+	return false
 }
 
 var conditionAttributes = []hcl.AttributeSchema{
