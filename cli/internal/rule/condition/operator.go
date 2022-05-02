@@ -4,6 +4,7 @@ import (
 	"github.com/zclconf/go-cty/cty"
 	"github.com/zclconf/go-cty/cty/gocty"
 	"log"
+	"regexp"
 )
 
 // TODO: Recover from panic error handling
@@ -15,6 +16,7 @@ var OperatorMap = map[string]func(interface{}, cty.Value) bool{
 	">=": SuperiorOrEqual,
 	"<":  InferiorStrict,
 	"<=": InferiorOrEqual,
+	"re": RegexMatch,
 }
 
 func Equality(attribute interface{}, expectedValue cty.Value) bool {
@@ -97,4 +99,14 @@ func InferiorOrEqual(attribute interface{}, expectedValue cty.Value) bool {
 		log.Println("Only allowed type: number")
 		return false
 	}
+}
+
+func RegexMatch(attribute interface{}, expectedExpression cty.Value) bool {
+	var expectedExpressionTyped string
+	err := gocty.FromCtyValue(expectedExpression, &expectedExpressionTyped)
+	if err != nil {
+		log.Println(err)
+	}
+	match, _ := regexp.MatchString(expectedExpressionTyped, attribute.(string))
+	return match
 }
