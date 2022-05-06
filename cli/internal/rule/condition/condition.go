@@ -1,6 +1,7 @@
 package condition
 
 import (
+	"fmt"
 	"github.com/hashicorp/hcl/v2"
 	"github.com/samy-dougui/tftest/cli/internal/loader"
 	"github.com/zclconf/go-cty/cty"
@@ -32,13 +33,15 @@ func (c *Condition) Init(block *hcl.Block) hcl.Diagnostics {
 	return diags
 }
 
-func (c *Condition) Check(resource *loader.ResourceChange) bool {
+func (c *Condition) Check(resource *loader.ResourceChange) (bool, hcl.Diagnostic) {
 	var attribute = resource.GetAttribute(c.Attribute)
 	if attribute != nil {
-		var operatorCheck = OperatorMap[c.Operator](attribute, c.Values)
-		return operatorCheck
+		operatorCheck, diag := OperatorMap[c.Operator](attribute, c.Values)
+		return operatorCheck, diag
 	}
-	return false
+	return false, hcl.Diagnostic{
+		Detail: fmt.Sprintf("The attribute %v is not set.", c.Attribute),
+	}
 }
 
 var conditionAttributes = []hcl.AttributeSchema{

@@ -59,9 +59,9 @@ func (r *Rule) Apply(plan *loader2.Plan) hcl.Diagnostics {
 	var diags hcl.Diagnostics
 	for _, resourceChange := range plan.ResourceChanges {
 		if isCapturedByFilter := r.Filter.Apply(&resourceChange); isCapturedByFilter {
-			isValid := r.Condition.Check(&resourceChange)
+			isValid, ruleDiag := r.Condition.Check(&resourceChange)
 			if !isValid {
-				ruleDiag := r.FormatError(&resourceChange)
+				r.FormatDiag(&resourceChange, &ruleDiag)
 				diags = append(diags, &ruleDiag)
 			}
 		}
@@ -69,18 +69,15 @@ func (r *Rule) Apply(plan *loader2.Plan) hcl.Diagnostics {
 	return diags
 }
 
-func (r *Rule) FormatError(resource *loader2.ResourceChange) hcl.Diagnostic {
+func (r *Rule) FormatDiag(resource *loader2.ResourceChange, diag *hcl.Diagnostic) {
 	var severity hcl.DiagnosticSeverity
 	if r.Severity == "warning" {
 		severity = hcl.DiagWarning
 	} else {
 		severity = hcl.DiagError
 	}
-	return hcl.Diagnostic{
-		Severity: severity,
-		Summary:  fmt.Sprintf("Resource %v doesn't follow the rule %v", resource.Address, r.Name),
-		Detail:   fmt.Sprintf("The resource %v doesn't follow the rule %v. Its attribute %v should be %v.", resource.Address, r.Name, r.Condition.Attribute, r.Condition.Values.GoString()),
-	}
+	diag.Severity = severity
+	diag.Summary = fmt.Sprintf("Resource %v doesn't follow the rule %v", resource.Address, r.Name)
 }
 
 var ruleAttributes = []hcl.AttributeSchema{
