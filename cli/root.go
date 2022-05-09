@@ -39,20 +39,23 @@ func run(planPath string, dirPath string) {
 	var loader loader2.Loader
 	loader.Init()
 
-	body, diagHCLFile := loader.LoadHCLFile(path.Join(path.Clean(dirPath), "policy.hcl"))
+	body, diagHCLFile := loader.LoadConfigDir(path.Clean(dirPath))
 	plan, diagPlanFile := loader.LoadPlan(planPath)
+
 	diags = append(diags, diagHCLFile...)
 	diags = append(diags, diagPlanFile...)
+
 	if diags.HasErrors() {
 		err := wr.WriteDiagnostics(diags)
 		if err != nil {
 			log.Fatal("Unexpected error")
-			return
 		}
-		return
+		os.Exit(1)
 	}
 
-	content, _ := body.Content(configFileSchema)
+	content, bodyDiag := body.Content(configFileSchema)
+	diags = append(diags, bodyDiag...)
+
 	for _, block := range content.Blocks {
 		switch block.Type {
 		case "rule":
@@ -65,6 +68,7 @@ func run(planPath string, dirPath string) {
 			continue
 		}
 	}
+
 	errDiag := wr.WriteDiagnostics(diags)
 	if diags.HasErrors() {
 		os.Exit(1)

@@ -1,6 +1,9 @@
 package loader
 
 import (
+	"encoding/json"
+	"fmt"
+	"github.com/hashicorp/hcl/v2"
 	"strings"
 )
 
@@ -32,6 +35,33 @@ type Change struct {
 	AfterUnknown    interface{}            `json:"after_unknown"`
 	BeforeSensitive interface{}            `json:"before_sensitive"`
 	AfterSensitive  interface{}            `json:"after_sensitive"`
+}
+
+func (l *Loader) LoadPlan(path string) (*Plan, hcl.Diagnostics) {
+	if exists, _ := l.FileSystem.Exists(path); !exists {
+		return nil, hcl.Diagnostics{
+			{
+				Severity: hcl.DiagError,
+				Summary:  "File doesn't exist",
+				Detail:   fmt.Sprintf("The file %q could not be read.", path),
+			},
+		}
+	}
+	jsonFileBytes, err := l.FileSystem.ReadFile(path)
+	if err != nil {
+		return nil, hcl.Diagnostics{
+			{
+				Severity: hcl.DiagError,
+				Summary:  "Failed to read file",
+				Detail:   fmt.Sprintf("The file %q could not be read.", path),
+			},
+		}
+	}
+
+	var plan Plan
+	_ = json.Unmarshal(jsonFileBytes, &plan)
+
+	return &plan, nil
 }
 
 func (r *ResourceChange) GetAttribute(attribute string) interface{} {
