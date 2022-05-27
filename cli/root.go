@@ -5,6 +5,7 @@ import (
 	"github.com/hashicorp/hcl/v2"
 	"github.com/hashicorp/hcl/v2/hclparse"
 	loader2 "github.com/samy-dougui/tftest/cli/internal/loader"
+	"github.com/samy-dougui/tftest/cli/internal/logger"
 	"github.com/samy-dougui/tftest/cli/internal/rule"
 	"github.com/spf13/cobra"
 	"log"
@@ -29,6 +30,8 @@ var RootCmd = &cobra.Command{
 }
 
 func run(planPath string, dirPath string) {
+	logging := logger.GetLogger()
+	logging.Info("My first log !!")
 	wr := hcl.NewDiagnosticTextWriter(
 		os.Stdout,                    // writer to send messages to
 		hclparse.NewParser().Files(), // the parser's file cache, for source snippets
@@ -55,7 +58,7 @@ func run(planPath string, dirPath string) {
 
 	content, bodyDiag := body.Content(configFileSchema)
 	diags = append(diags, bodyDiag...)
-
+	logging.Info(fmt.Sprintf("Number of rules found: %v", len(content.Blocks)))
 	for _, block := range content.Blocks {
 		switch block.Type {
 		case "rule":
@@ -63,19 +66,22 @@ func run(planPath string, dirPath string) {
 			ruleDiags := rule.Init(block)
 			diags = append(diags, ruleDiags...)
 			applyDiags := rule.Apply(plan)
+
 			diags = append(diags, applyDiags...)
+
 		default:
 			continue
 		}
 	}
-
 	errDiag := wr.WriteDiagnostics(diags)
-	if diags.HasErrors() {
-		os.Exit(1)
-	}
 	if errDiag != nil {
 		fmt.Printf("Error while writing the diagnostics: %v", errDiag)
 	}
+
+	if diags.HasErrors() {
+		os.Exit(1)
+	}
+
 }
 
 var configFileSchema = &hcl.BodySchema{

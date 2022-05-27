@@ -1,26 +1,38 @@
-rule "azure_storage_container_name_pattern" {
+#rule "azure_storage_container_name_pattern" {
+#  filter {
+#    type = "azurerm_storage_container"
+#  }
+#  condition {
+#    attribute = "name"
+#    operator  = "re"
+#    values    = "([aA-zZ]+)_([aA-zZ]+)_([aA-zZ]+)"
+#  }
+#  severity      = "error"
+#  error_message = ""
+#}
+#
+#
+#rule "azure_storage_container_metadata" {
+#  filter {
+#    type = "azurerm_storage_container"
+#  }
+#  condition {
+#    attribute = "metadata.hdi_version"
+#    operator  = "="
+#    values    = "2013"
+#  }
+#  severity      = "warning"
+#  error_message = ""
+#}
+#
+#
+rule "dbt_file_size" {
   filter {
-    type = "azurerm_storage_container"
+    type = "databricks_dbfs_file"
   }
   condition {
-    attribute = "name"
-    operator  = "re"
-    values    = "([aA-zZ]+)_([aA-zZ]+)_([aA-zZ]+)"
-  }
-  severity      = "error"
-  error_message = ""
-}
-
-
-rule "azure_storage_container_metadata" {
-  filter {
-    type = "azurerm_storage_container"
-  }
-  condition {
-    attribute = "metadata.hdi_version"
+    attribute = "file_size"
     operator  = "="
-    values    = "2013"
+    values    = 0
   }
-  severity      = "warning"
-  error_message = ""
 }
