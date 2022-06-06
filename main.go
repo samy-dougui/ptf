@@ -1,26 +1,16 @@
 package main
 
 import (
-	"fmt"
-	"github.com/samy-dougui/tftest/cli"
-	"github.com/samy-dougui/tftest/cli/logging"
-	"os"
+	"github.com/samy-dougui/ptf/cmd"
+	"github.com/samy-dougui/ptf/internal/logging"
 )
 
 func main() {
 	setUp()
-	logger := logging.GetLogger()
-	logger.Info("test info")
-	//Execute()
-}
-
-func Execute() {
-	if err := cli.RootCmd.Execute(); err != nil {
-		fmt.Println(err)
-		os.Exit(1)
-	}
+	cmd.Execute()
 }
 
 func setUp() {
 	logging.SetUpLogger()
+	logging.SetUpDiagnosticLogger()
 }

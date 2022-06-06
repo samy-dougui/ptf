@@ -3,23 +3,23 @@ package rule
 import (
 	"fmt"
 	"github.com/hashicorp/hcl/v2"
-	loader2 "github.com/samy-dougui/tftest/cli/internal/loader"
-	"github.com/samy-dougui/tftest/cli/internal/rule/condition"
-	"github.com/samy-dougui/tftest/cli/internal/rule/filter"
+	"github.com/samy-dougui/ptf/internal/loader"
+	condition2 "github.com/samy-dougui/ptf/internal/rule/condition"
+	filter2 "github.com/samy-dougui/ptf/internal/rule/filter"
 )
 
 type Rule struct {
 	Name         string
 	Severity     string
 	ErrorMessage string
-	Filter       filter.Filter
-	Condition    condition.Condition
+	Filter       filter2.Filter
+	Condition    condition2.Condition
 }
 
 func (r *Rule) Init(block *hcl.Block) hcl.Diagnostics {
 	var diags hcl.Diagnostics
-	var ruleFilter filter.Filter
-	var ruleCondition condition.Condition
+	var ruleFilter filter2.Filter
+	var ruleCondition condition2.Condition
 
 	r.Name = block.Labels[0]
 	ruleBody, _, diagInitRule := block.Body.PartialContent(BlockSchema)
@@ -55,7 +55,7 @@ func (r *Rule) Init(block *hcl.Block) hcl.Diagnostics {
 	return diags
 }
 
-func (r *Rule) Apply(plan *loader2.Plan) hcl.Diagnostics {
+func (r *Rule) Apply(plan *loader.Plan) hcl.Diagnostics {
 	var diags hcl.Diagnostics
 	for _, resourceChange := range plan.ResourceChanges {
 		if isCapturedByFilter := r.Filter.Apply(&resourceChange); isCapturedByFilter {
@@ -69,7 +69,7 @@ func (r *Rule) Apply(plan *loader2.Plan) hcl.Diagnostics {
 	return diags
 }
 
-func (r *Rule) FormatDiag(resource *loader2.ResourceChange, diag *hcl.Diagnostic) {
+func (r *Rule) FormatDiag(resource *loader.ResourceChange, diag *hcl.Diagnostic) {
 	var severity hcl.DiagnosticSeverity
 	if r.Severity == "warning" {
 		severity = hcl.DiagWarning
@@ -89,7 +89,8 @@ var ruleAttributes = []hcl.AttributeSchema{
 	},
 	{
 		Name: "severity",
-	}, {
+	},
+	{
 		Name: "error_message",
 	},
 }

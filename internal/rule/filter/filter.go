@@ -2,7 +2,7 @@ package filter
 
 import (
 	"github.com/hashicorp/hcl/v2"
-	"github.com/samy-dougui/tftest/cli/internal/loader"
+	loader2 "github.com/samy-dougui/ptf/internal/loader"
 )
 
 type Filter struct {
@@ -25,7 +25,7 @@ func (f *Filter) Init(block *hcl.Block) hcl.Diagnostics {
 }
 
 // The Filtering logic should be included in this function
-func (f *Filter) Apply(resource *loader.ResourceChange) bool {
+func (f *Filter) Apply(resource *loader2.ResourceChange) bool {
 	return f.Type == resource.Type
 }
 

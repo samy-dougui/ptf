@@ -26,13 +26,13 @@
 #}
 #
 #
-rule "dbt_file_size" {
-  filter {
-    type = "databricks_dbfs_file"
-  }
-  condition {
-    attribute = "file_size"
-    operator  = "="
-    values    = 0
-  }
-}
+#rule "dbt_file_size" {
+#  filter {
+#    type = "databricks_dbfs_file"
+#  }
+#  condition {
+#    attribute = "file_size"
+#    operator  = "="
+#    values    = 0
+#  }
+#}

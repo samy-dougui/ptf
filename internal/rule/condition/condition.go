@@ -3,7 +3,7 @@ package condition
 import (
 	"fmt"
 	"github.com/hashicorp/hcl/v2"
-	"github.com/samy-dougui/tftest/cli/internal/loader"
+	loader2 "github.com/samy-dougui/ptf/internal/loader"
 	"github.com/zclconf/go-cty/cty"
 )
 
@@ -33,7 +33,7 @@ func (c *Condition) Init(block *hcl.Block) hcl.Diagnostics {
 	return diags
 }
 
-func (c *Condition) Check(resource *loader.ResourceChange) (bool, hcl.Diagnostic) {
+func (c *Condition) Check(resource *loader2.ResourceChange) (bool, hcl.Diagnostic) {
 	var attribute = resource.GetAttribute(c.Attribute)
 	if attribute != nil {
 		operatorCheck, diag := OperatorMap[c.Operator](attribute, c.Values)
