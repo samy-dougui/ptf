@@ -3,11 +3,15 @@ package main
 import (
 	"fmt"
 	"github.com/samy-dougui/tftest/cli"
+	"github.com/samy-dougui/tftest/cli/logging"
 	"os"
 )
 
 func main() {
-	Execute()
+	setUp()
+	logger := logging.GetLogger()
+	logger.Info("test info")
+	//Execute()
 }
 
 func Execute() {
@@ -15,4 +19,8 @@ func Execute() {
 		fmt.Println(err)
 		os.Exit(1)
 	}
+}
+
+func setUp() {
+	logging.SetUpLogger()
 }
