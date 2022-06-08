@@ -23,3 +23,19 @@ rule "azure_storage_container_metadata" {
   severity      = "warning"
   error_message = ""
 }
+
+rule "azure_tag" {
+  filter {
+    type = "azurerm_storage_container"
+  }
+  condition {
+    attribute = "tags"
+    operator  = "="
+    values    = {
+      "environment" : "testfsdjfsdkj",
+      "id" : 1.5,
+      "key_missing": "value",
+      "is_prod": true
+    }
+  }
+}

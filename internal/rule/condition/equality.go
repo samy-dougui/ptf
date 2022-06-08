@@ -1,0 +1,122 @@
+package condition
+
+import (
+	"fmt"
+	"github.com/hashicorp/hcl/v2"
+	"github.com/samy-dougui/ptf/internal/logging"
+	"github.com/zclconf/go-cty/cty"
+	"github.com/zclconf/go-cty/cty/gocty"
+)
+
+func Equality(attribute interface{}, expectedValue cty.Value) (bool, hcl.Diagnostic) {
+	logger := logging.GetLogger()
+	var isValid bool
+	var diag = hcl.Diagnostic{}
+	if expectedValue.Type().IsObjectType() {
+		var diags hcl.Diagnostics
+		isValid, diags = equalityObject(&attribute, &expectedValue)
+		diag.Detail = concatDiagsDetail(&diags)
+	} else {
+		switch expectedValue.Type() {
+		case cty.Number:
+			var expectedValueTyped float64
+			err := gocty.FromCtyValue(expectedValue, &expectedValueTyped)
+			if err != nil {
+				logger.Error(err)
+			}
+			isValid = attribute.(float64) == expectedValueTyped
+			diag.Detail = fmt.Sprintf("It was expecting %v, but it's equals to %v.", expectedValueTyped, attribute.(float64))
+		case cty.String:
+			var expectedValueTyped string
+			err := gocty.FromCtyValue(expectedValue, &expectedValueTyped)
+			if err != nil {
+				logger.Error(err)
+			}
+			isValid = attribute.(string) == expectedValueTyped
+			diag.Detail = fmt.Sprintf("It was expecting %v, but it's equals to %v.", expectedValueTyped, attribute.(string))
+		default:
+			logger.Debug(expectedValue.Type().IsPrimitiveType())
+			diag.Detail = "Default Value"
+			isValid = false
+		}
+	}
+	return isValid, diag
+}
+
+func equalityObject(attribute *interface{}, expectedValue *cty.Value) (bool, hcl.Diagnostics) {
+	var diags hcl.Diagnostics
+	attributeTyped := (*attribute).(map[string]interface{})
+	for key, value := range expectedValue.AsValueMap() {
+		if attributeValue, ok := attributeTyped[key]; ok {
+			switch attributeValue.(type) {
+			case string:
+				if value.Type() != cty.String {
+					diags = append(diags, &hcl.Diagnostic{
+						Severity: hcl.DiagError,
+						Detail:   fmt.Sprintf("Expected a %v for the key \"%v\", but got a string", value.Type().FriendlyName(), key),
+					})
+				} else {
+					var expectedValueTyped string
+					_ = gocty.FromCtyValue(value, &expectedValueTyped) // TODO: handle error
+					if expectedValueTyped != attributeValue.(string) {
+						diags = append(diags, &hcl.Diagnostic{
+							Severity: hcl.DiagError,
+							Detail:   fmt.Sprintf("The key \"%v\" was expecting %v but got %v", key, expectedValueTyped, attributeValue.(string)),
+						})
+					}
+				}
+			case float64:
+				if value.Type() != cty.Number {
+					diags = append(diags, &hcl.Diagnostic{
+						Severity: hcl.DiagError,
+						Detail:   fmt.Sprintf("Expected a %v for the key \"%v\", but got a float64", value.Type().FriendlyName(), key),
+					})
+				} else {
+					var expectedValueTyped float64
+					_ = gocty.FromCtyValue(value, &expectedValueTyped)
+					if expectedValueTyped != attributeValue.(float64) {
+						diags = append(diags, &hcl.Diagnostic{
+							Severity: hcl.DiagError,
+							Detail:   fmt.Sprintf("The key \"%v\" was expecting %v but got %v", key, expectedValueTyped, attributeValue.(float64)),
+						})
+					}
+				}
+			case bool:
+				if value.Type() != cty.Bool {
+					diags = append(diags, &hcl.Diagnostic{
+						Severity: hcl.DiagError,
+						Detail:   fmt.Sprintf("Expected a %v for the key \"%v\", but got a boolean", value.Type().FriendlyName(), key),
+					})
+				} else {
+					var expectedValueTyped bool
+					_ = gocty.FromCtyValue(value, &expectedValueTyped)
+					if expectedValueTyped != attributeValue.(bool) {
+						diags = append(diags, &hcl.Diagnostic{
+							Severity: hcl.DiagError,
+							Detail:   fmt.Sprintf("The key \"%v\" was expecting %v but got %v", key, expectedValueTyped, attributeValue.(bool)),
+						})
+					}
+				}
+			default:
+				diags = append(diags, &hcl.Diagnostic{
+					Severity: hcl.DiagError,
+					Detail:   "The only permitted values for testing the equality of two dictionaries are string, float64 and boolean",
+				})
+			}
+		} else {
+			diags = append(diags, &hcl.Diagnostic{
+				Severity: hcl.DiagError,
+				Detail:   fmt.Sprintf("The key \"%v\" is not set", key),
+			})
+		}
+	}
+	return !diags.HasErrors(), diags
+}
+
+func concatDiagsDetail(diags *hcl.Diagnostics) string {
+	var diagsDetail string
+	for _, diag := range *diags {
+		diagsDetail += "- " + diag.Detail + "\n"
+	}
+	return diagsDetail
+}
