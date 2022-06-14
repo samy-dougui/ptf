@@ -3,7 +3,7 @@ package control
 import (
 	"github.com/hashicorp/hcl/v2"
 	"github.com/samy-dougui/ptf/internal/config"
-	loader2 "github.com/samy-dougui/ptf/internal/loader"
+	"github.com/samy-dougui/ptf/internal/loader"
 	"github.com/samy-dougui/ptf/internal/logging"
 	"github.com/samy-dougui/ptf/internal/rule"
 	"github.com/spf13/cobra"
@@ -36,7 +36,7 @@ func run(planPath string, dirPath string) {
 	logger := logging.GetLogger()
 	logger.Debugf("Run control command with planPath: %v and chdir: %v", planPath, dirPath)
 	var diags hcl.Diagnostics
-	var loader loader2.Loader // TODO: Maybe add global loader and init and setup
+	var loader loader.Loader // TODO: Maybe add global loader and init and setup
 	loader.Init()
 
 	body, diagHCLFile := loader.LoadConfigDir(path.Clean(dirPath))

@@ -4,22 +4,22 @@ import (
 	"fmt"
 	"github.com/hashicorp/hcl/v2"
 	"github.com/samy-dougui/ptf/internal/loader"
-	condition2 "github.com/samy-dougui/ptf/internal/rule/condition"
-	filter2 "github.com/samy-dougui/ptf/internal/rule/filter"
+	"github.com/samy-dougui/ptf/internal/rule/condition"
+	"github.com/samy-dougui/ptf/internal/rule/filter"
 )
 
 type Rule struct {
 	Name         string
 	Severity     string
 	ErrorMessage string
-	Filter       filter2.Filter
-	Condition    condition2.Condition
+	Filter       filter.Filter
+	Condition    condition.Condition
 }
 
 func (r *Rule) Init(block *hcl.Block) hcl.Diagnostics {
 	var diags hcl.Diagnostics
-	var ruleFilter filter2.Filter
-	var ruleCondition condition2.Condition
+	var ruleFilter filter.Filter
+	var ruleCondition condition.Condition
 
 	r.Name = block.Labels[0]
 	ruleBody, _, diagInitRule := block.Body.PartialContent(BlockSchema)
@@ -78,6 +78,7 @@ func (r *Rule) FormatDiag(resource *loader.ResourceChange, diag *hcl.Diagnostic)
 	}
 	diag.Severity = severity
 	diag.Summary = fmt.Sprintf("Resource %v doesn't follow the rule %v", resource.Address, r.Name)
+
 }
 
 var ruleAttributes = []hcl.AttributeSchema{

@@ -3,18 +3,19 @@ package condition
 import (
 	"fmt"
 	"github.com/hashicorp/hcl/v2"
+	"github.com/samy-dougui/ptf/internal/logging"
 	"github.com/zclconf/go-cty/cty"
 	"github.com/zclconf/go-cty/cty/gocty"
-	"log"
 	"regexp"
 )
 
 func RegexMatch(attribute interface{}, expectedExpression cty.Value) (bool, hcl.Diagnostic) {
+	logger := logging.GetLogger()
 	var diag = hcl.Diagnostic{}
 	var expectedExpressionTyped string
 	err := gocty.FromCtyValue(expectedExpression, &expectedExpressionTyped)
 	if err != nil {
-		log.Println(err)
+		logger.Error(err)
 	}
 	isValid, _ := regexp.MatchString(expectedExpressionTyped, attribute.(string))
 	if !isValid {
