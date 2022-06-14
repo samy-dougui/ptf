@@ -15,4 +15,6 @@ var OperatorMap = map[string]func(interface{}, cty.Value) (bool, hcl.Diagnostic)
 	"<":  InferiorStrict,
 	"<=": InferiorOrEqual,
 	"re": RegexMatch,
+	"in": Inclusion,
+	"not in": NotInclusion,
 }
