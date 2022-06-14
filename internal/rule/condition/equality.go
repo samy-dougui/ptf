@@ -12,33 +12,59 @@ func Equality(attribute interface{}, expectedValue cty.Value) (bool, hcl.Diagnos
 	logger := logging.GetLogger()
 	var isValid bool
 	var diag = hcl.Diagnostic{}
-	if expectedValue.Type().IsObjectType() {
+	if expectedValue.Type().IsPrimitiveType() {
+		isValid, diag = equalityPrimitive(&attribute, &expectedValue)
+	} else if expectedValue.Type().IsObjectType() {
 		var diags hcl.Diagnostics
 		isValid, diags = equalityObject(&attribute, &expectedValue)
-		diag.Detail = concatDiagsDetail(&diags)
-	} else {
-		switch expectedValue.Type() {
-		case cty.Number:
-			var expectedValueTyped float64
-			err := gocty.FromCtyValue(expectedValue, &expectedValueTyped)
-			if err != nil {
-				logger.Error(err)
-			}
-			isValid = attribute.(float64) == expectedValueTyped
-			diag.Detail = fmt.Sprintf("It was expecting %v, but it's equals to %v.", expectedValueTyped, attribute.(float64))
-		case cty.String:
-			var expectedValueTyped string
-			err := gocty.FromCtyValue(expectedValue, &expectedValueTyped)
-			if err != nil {
-				logger.Error(err)
-			}
-			isValid = attribute.(string) == expectedValueTyped
-			diag.Detail = fmt.Sprintf("It was expecting %v, but it's equals to %v.", expectedValueTyped, attribute.(string))
-		default:
-			logger.Debug(expectedValue.Type().IsPrimitiveType())
-			diag.Detail = "Default Value"
-			isValid = false
+		if !isValid {
+			diag.Detail = concatDiagsDetail(&diags)
 		}
+	} else {
+		logger.Infof("Type un managed: %v", expectedValue.Type().FriendlyName())
+	}
+	return isValid, diag
+}
+
+func equalityPrimitive(attribute *interface{}, expectedValue *cty.Value) (bool, hcl.Diagnostic) {
+	logger := logging.GetLogger()
+	var isValid bool
+	var diag hcl.Diagnostic
+	switch expectedValue.Type() {
+	case cty.Number:
+		var expectedValueTyped float64
+		err := gocty.FromCtyValue(*expectedValue, &expectedValueTyped)
+		if err != nil {
+			logger.Error(err)
+		}
+		isValid = (*attribute).(float64) == expectedValueTyped
+		if !isValid {
+			diag.Detail = fmt.Sprintf("It was expecting %v, but it's equals to %v.", expectedValueTyped, (*attribute).(float64))
+		}
+	case cty.String:
+		var expectedValueTyped string
+		err := gocty.FromCtyValue(*expectedValue, &expectedValueTyped)
+		if err != nil {
+			logger.Error(err)
+		}
+		isValid = (*attribute).(string) == expectedValueTyped
+		if !isValid {
+			diag.Detail = fmt.Sprintf("It was expecting %v, but it's equals to %v.", expectedValueTyped, (*attribute).(string))
+		}
+	case cty.Bool:
+		var expectedValueTyped bool
+		err := gocty.FromCtyValue(*expectedValue, &expectedValueTyped)
+		if err != nil {
+			logger.Error(err)
+		}
+		isValid = (*attribute).(bool) == expectedValueTyped
+		if !isValid {
+			diag.Detail = fmt.Sprintf("It was expecting %v, but it's equals to %v.", expectedValueTyped, (*attribute).(bool))
+		}
+	default:
+		logger.Debug(expectedValue.Type().IsPrimitiveType())
+		diag.Detail = "Default Value"
+		isValid = false
 	}
 	return isValid, diag
 }
