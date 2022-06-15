@@ -14,7 +14,10 @@ type Rule struct {
 	ErrorMessage string
 	Filter       filter.Filter
 	Condition    condition.Condition
+	Disabled     bool
 }
+
+// TODO: add more logging in init rule
 
 func (r *Rule) Init(block *hcl.Block) hcl.Diagnostics {
 	var diags hcl.Diagnostics
@@ -22,6 +25,7 @@ func (r *Rule) Init(block *hcl.Block) hcl.Diagnostics {
 	var ruleCondition condition.Condition
 
 	r.Name = block.Labels[0]
+	r.initDefaultValues()
 	ruleBody, _, diagInitRule := block.Body.PartialContent(BlockSchema)
 	diags = append(diags, diagInitRule...)
 
@@ -35,11 +39,14 @@ func (r *Rule) Init(block *hcl.Block) hcl.Diagnostics {
 			errorMessage, diagErrorMessage := attribute.Expr.Value(nil)
 			diags = append(diags, diagErrorMessage...)
 			r.ErrorMessage = errorMessage.AsString()
+		case "disabled":
+			disabled, diagDisabled := attribute.Expr.Value(nil)
+			diags = append(diags, diagDisabled...)
+			r.Disabled = disabled.True()
 		default:
 			continue
 		}
 	}
-
 	for _, myBlock := range ruleBody.Blocks {
 		switch myBlock.Type {
 		case "filter":
@@ -53,6 +60,11 @@ func (r *Rule) Init(block *hcl.Block) hcl.Diagnostics {
 	r.Filter = ruleFilter
 	r.Condition = ruleCondition
 	return diags
+}
+
+func (r *Rule) initDefaultValues() {
+	r.Disabled = false
+	r.Severity = "error"
 }
 
 func (r *Rule) Apply(plan *loader.Plan) hcl.Diagnostics {
@@ -81,6 +93,10 @@ func (r *Rule) FormatDiag(resource *loader.ResourceChange, diag *hcl.Diagnostic)
 
 }
 
+func (r *Rule) IsDisabled() bool {
+	return r.Disabled
+}
+
 var ruleAttributes = []hcl.AttributeSchema{
 	{
 		Name: "filter",
@@ -93,6 +109,9 @@ var ruleAttributes = []hcl.AttributeSchema{
 	},
 	{
 		Name: "error_message",
+	},
+	{
+		Name: "disabled",
 	},
 }
 

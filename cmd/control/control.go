@@ -62,8 +62,10 @@ func run(planPath string, dirPath string) {
 			var rule rule.Rule
 			ruleDiags := rule.Init(block)
 			diags = append(diags, ruleDiags...)
-			applyDiags := rule.Apply(plan)
-			diags = append(diags, applyDiags...)
+			if !rule.IsDisabled() {
+				applyDiags := rule.Apply(plan)
+				diags = append(diags, applyDiags...)
+			}
 		default:
 			continue
 		}
