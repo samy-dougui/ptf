@@ -12,20 +12,20 @@ func Inclusion(attribute interface{}, expectedValue cty.Value) (bool, hcl.Diagno
 	logger := logging.GetLogger()
 	var diag hcl.Diagnostic
 	if !expectedValue.Type().IsTupleType() {
-		// TODO: should implement a validation of the rule
+		// TODO: should implement a validation of the policy
 		diag.Severity = hcl.DiagError
 		diag.Detail = fmt.Sprintf("For operator \"in\": Expected a list, received a %v", expectedValue.Type().FriendlyName())
 	} else {
 		if allSameType := checkAllSameType(&expectedValue); !allSameType {
 			logger.Debug("Not all the elements of the list have the same type.")
-			diag.Detail = "We couldn't apply this rule as not all the elements of the provided list have the same type."
+			diag.Detail = "We couldn't apply this policy as not all the elements of the provided list have the same type."
 			return false, diag
 		}
 
 		tupleType := getType(&expectedValue)
 		if !tupleType.IsPrimitiveType() {
 			logger.Debugf("The allowed types in a list are number, string or boolean. This list has %v", tupleType.FriendlyName())
-			diag.Detail = fmt.Sprintf("We couldn't apply this rule as the only types of element allowed in a list of value are number, string and boolean.")
+			diag.Detail = fmt.Sprintf("We couldn't apply this policy as the only types of element allowed in a list of value are number, string and boolean.")
 			return false, diag
 		}
 
@@ -46,21 +46,21 @@ func NotInclusion(attribute interface{}, expectedValue cty.Value) (bool, hcl.Dia
 	logger := logging.GetLogger()
 	var diag hcl.Diagnostic
 	if !expectedValue.Type().IsTupleType() {
-		// TODO: should implement a validation of the rule
+		// TODO: should implement a validation of the policy
 		diag.Detail = fmt.Sprintf("For operator \"in\": Expected a list, received a %v", expectedValue.Type().FriendlyName())
 		return false, diag
 	} else {
 		// TODO: Maybe put this in a validator class
 		if allSameType := checkAllSameType(&expectedValue); !allSameType {
 			logger.Debug("Not all the elements of the list have the same type.")
-			diag.Detail = "We couldn't apply this rule as not all the elements of the provided list have the same type."
+			diag.Detail = "We couldn't apply this policy as not all the elements of the provided list have the same type."
 			return false, diag
 		}
 
 		tupleType := getType(&expectedValue)
 		if !tupleType.IsPrimitiveType() {
 			logger.Debugf("The allowed types in a list are number, string or boolean. This list has %v", tupleType.FriendlyName())
-			diag.Detail = fmt.Sprintf("We couldn't apply this rule as the only types of element allowed in a list of value are number, string and boolean.")
+			diag.Detail = fmt.Sprintf("We couldn't apply this policy as the only types of element allowed in a list of value are number, string and boolean.")
 			return false, diag
 		}
 

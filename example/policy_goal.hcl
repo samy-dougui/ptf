@@ -1,4 +1,4 @@
-rule "my_goal_rule" {
+policy "my_goal_policy" {
   filter {
     type = "azurerm_resource_group" # if more than one filter, should be an "and"
   }

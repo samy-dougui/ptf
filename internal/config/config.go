@@ -5,7 +5,7 @@ import "github.com/hashicorp/hcl/v2"
 var ConfigFileSchema = &hcl.BodySchema{
 	Blocks: []hcl.BlockHeaderSchema{
 		{
-			Type:       "rule",
+			Type:       "policy",
 			LabelNames: []string{"name"},
 		},
 	},

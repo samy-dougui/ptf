@@ -5,7 +5,7 @@ import (
 	"github.com/samy-dougui/ptf/internal/config"
 	"github.com/samy-dougui/ptf/internal/loader"
 	"github.com/samy-dougui/ptf/internal/logging"
-	"github.com/samy-dougui/ptf/internal/rule"
+	"github.com/samy-dougui/ptf/internal/policy"
 	"github.com/spf13/cobra"
 	"os"
 	"path"
@@ -55,15 +55,15 @@ func run(planPath string, dirPath string) {
 
 	content, bodyDiag := body.Content(config.ConfigFileSchema)
 	diags = append(diags, bodyDiag...)
-	logger.Debugf("Number of rules found: %v", len(content.Blocks))
+	logger.Debugf("Number of policy found: %v", len(content.Blocks))
 	for _, block := range content.Blocks {
 		switch block.Type {
-		case "rule":
-			var rule rule.Rule
-			ruleDiags := rule.Init(block)
-			diags = append(diags, ruleDiags...)
-			if !rule.IsDisabled() {
-				applyDiags := rule.Apply(plan)
+		case "policy":
+			var policy policy.Policy
+			policyDiags := policy.Init(block)
+			diags = append(diags, policyDiags...)
+			if !policy.IsDisabled() {
+				applyDiags := policy.Apply(plan)
 				diags = append(diags, applyDiags...)
 			}
 		default:
