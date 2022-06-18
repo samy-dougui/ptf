@@ -15,6 +15,35 @@ type Policy struct {
 	Filter       filter.Filter
 	Condition    condition.Condition
 	Disabled     bool
+	Passed       bool
+}
+
+func InitPolicies(blocks hcl.Blocks) ([]Policy, hcl.Diagnostics) {
+	policies := make([]Policy, len(blocks))
+	var diags hcl.Diagnostics
+	for _, block := range blocks {
+		switch block.Type {
+		case "policy":
+			var policy Policy
+			policyDiags := policy.Init(block)
+			diags = append(diags, policyDiags...)
+			policies = append(policies, policy)
+		default:
+			continue
+		}
+	}
+	return policies, diags
+}
+
+func ApplyPolicies(policies *[]Policy, plan *loader.Plan) hcl.Diagnostics {
+	var diags hcl.Diagnostics
+	for _, policy := range *policies {
+		if !policy.IsDisabled() {
+			applyDiags := policy.Apply(plan)
+			diags = append(diags, applyDiags...)
+		}
+	}
+	return diags
 }
 
 func (p *Policy) Init(block *hcl.Block) hcl.Diagnostics {
@@ -70,6 +99,7 @@ func (p *Policy) Apply(plan *loader.Plan) hcl.Diagnostics {
 	for _, resourceChange := range plan.ResourceChanges {
 		if isCapturedByFilter := p.Filter.Apply(&resourceChange); isCapturedByFilter {
 			isValid, policyDiag := p.Condition.Check(&resourceChange)
+			p.Passed = isValid
 			if !isValid {
 				p.FormatDiag(&resourceChange, &policyDiag)
 				diags = append(diags, &policyDiag)

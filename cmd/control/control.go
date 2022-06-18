@@ -6,6 +6,7 @@ import (
 	"github.com/samy-dougui/ptf/internal/loader"
 	"github.com/samy-dougui/ptf/internal/logging"
 	"github.com/samy-dougui/ptf/internal/policy"
+	"github.com/samy-dougui/ptf/internal/ux"
 	"github.com/spf13/cobra"
 	"os"
 	"path"
@@ -19,7 +20,7 @@ var (
 var ControlCmd = &cobra.Command{
 	Use:   "control",
 	Short: "Control your Terraform plan and Terraform state.",
-	Long:  ``, // TODO: Add long description to control comdand
+	Long:  ``, // TODO: Add long description to control command
 
 	Run: func(cmd *cobra.Command, args []string) {
 		run(planPath, dirPath)
@@ -54,23 +55,15 @@ func run(planPath string, dirPath string) {
 	}
 
 	content, bodyDiag := body.Content(config.ConfigFileSchema)
+	policies, initDiags := policy.InitPolicies(content.Blocks)
+	applyDiags := policy.ApplyPolicies(&policies, plan)
+
 	diags = append(diags, bodyDiag...)
-	logger.Debugf("Number of policy found: %v", len(content.Blocks))
-	for _, block := range content.Blocks {
-		switch block.Type {
-		case "policy":
-			var policy policy.Policy
-			policyDiags := policy.Init(block)
-			diags = append(diags, policyDiags...)
-			if !policy.IsDisabled() {
-				applyDiags := policy.Apply(plan)
-				diags = append(diags, applyDiags...)
-			}
-		default:
-			continue
-		}
-	}
+	diags = append(diags, initDiags...)
+	diags = append(diags, applyDiags...)
+
 	errDiag := logging.WriteDiagnostics(diags)
+	ux.WriteSummary(&diags, &policies)
 	if errDiag != nil {
 		logger.Errorf("Error while writing the diagnostics: %v", errDiag)
 	}
