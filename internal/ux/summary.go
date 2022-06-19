@@ -6,9 +6,9 @@ import (
 	"github.com/samy-dougui/ptf/internal/policy"
 )
 
-func WriteSummary(diags *hcl.Diagnostics, policies *[]policy.Policy) {
+func WriteSummary(diags *hcl.Diagnostics, policies []*policy.Policy) {
 	logger := logging.GetLogger()
-	numberOfPolicies := len(*policies)
+	numberOfPolicies := len(policies)
 	numberOfWarnings := getNumberOfWarnings(diags)
 	numberOfErrors := getNumberOfErrors(diags)
 	numberOfPass := getNumberOfPass(policies)
@@ -40,9 +40,9 @@ func getNumberOfErrors(diags *hcl.Diagnostics) int {
 	return numberOfErrors
 }
 
-func getNumberOfPass(policies *[]policy.Policy) int {
-	var numberOfPass int
-	for _, policy := range *policies {
+func getNumberOfPass(policies []*policy.Policy) int {
+	numberOfPass := 0
+	for _, policy := range policies {
 		if policy.Passed {
 			numberOfPass += 1
 		}

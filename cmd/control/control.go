@@ -56,14 +56,14 @@ func run(planPath string, dirPath string) {
 
 	content, bodyDiag := body.Content(config.ConfigFileSchema)
 	policies, initDiags := policy.InitPolicies(content.Blocks)
-	applyDiags := policy.ApplyPolicies(&policies, plan)
+	applyDiags := policy.ApplyPolicies(policies, plan)
 
 	diags = append(diags, bodyDiag...)
 	diags = append(diags, initDiags...)
 	diags = append(diags, applyDiags...)
 
 	errDiag := logging.WriteDiagnostics(diags)
-	ux.WriteSummary(&diags, &policies)
+	ux.WriteSummary(&diags, policies)
 	if errDiag != nil {
 		logger.Errorf("Error while writing the diagnostics: %v", errDiag)
 	}

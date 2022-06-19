@@ -9,8 +9,23 @@ policy "azure_storage_container_name_pattern" {
   }
   severity      = "error"
   error_message = ""
+  disabled      = true
+}
+
+policy "azurem_storage_account_blob_properties" {
+  filter {
+    type = "azurerm_storage_account"
+  }
+  condition {
+    attribute = "name"
+    operator  = "re"
+    values    = "([aA-zZ]+)"
+  }
+  severity      = "error"
+  error_message = ""
   disabled      = false
 }
+
 
 
 policy "azure_storage_container_metadata" {

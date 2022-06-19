@@ -20,7 +20,7 @@ policy "azure_storage_container_name" {
     values    = "stage"
   }
   severity = "error"
-  disabled = false
+  disabled = true
 }
 
 policy "azure_storage_container_metadata" {
