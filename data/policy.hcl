@@ -17,15 +17,15 @@ policy "azurem_storage_account_blob_properties" {
     type = "azurerm_storage_account"
   }
   condition {
-    attribute = "name"
-    operator  = "re"
-    values    = "([aA-zZ]+)"
+#    attribute = "blob_properties.[1].change_feed_enabled"
+        attribute = "queue_properties.[*].hour_metrics.[0].version"
+    operator  = "="
+    values    = true
   }
   severity      = "error"
   error_message = ""
   disabled      = false
 }
-
 
 
 policy "azure_storage_container_metadata" {
