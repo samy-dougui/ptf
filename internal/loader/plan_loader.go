@@ -66,24 +66,6 @@ func (l *Loader) LoadPlan(path string) (*Plan, hcl.Diagnostics) {
 	return &plan, nil
 }
 
-// We have something like attribute_1[*].attribute_1_2
-// We want (if attribute 1 has 3 element)
-// [attribute_1[0].attribute_1_2, attribute_1[1].attribute_1_2, attribute_1[2].attribute_1_2]
-
-func (r *ResourceChange) GetAttribute(attribute string) interface{} {
-	// TODO: it's only for the After, should be configurable
-	logger := logging.GetLogger()
-	var _attribute = r.Change.After                      // here we have the full object
-	var nestedAttributes = strings.Split(attribute, ".") // here we have [attribute_1[*], attribute_2]
-	for _, nestedAttribute := range nestedAttributes[:len(nestedAttributes)-1] {
-		if strings.Contains(nestedAttribute, "[*]") {
-			logger.Info(nestedAttribute)
-		}
-		_attribute = _attribute[nestedAttribute].(map[string]interface{})
-	}
-	return _attribute[nestedAttributes[len(nestedAttributes)-1]]
-}
-
 // TODO: definitely need tests / to be moved to another package as it's not the plan loader jurisdiction
 // TODO: need to update the rest to test for each returned attribute
 // TODO: the naming of the variables should be revised
