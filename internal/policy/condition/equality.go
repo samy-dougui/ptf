@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/hashicorp/hcl/v2"
 	"github.com/samy-dougui/ptf/internal/logging"
+	"github.com/samy-dougui/ptf/internal/utils"
 	"github.com/zclconf/go-cty/cty"
 	"github.com/zclconf/go-cty/cty/gocty"
 )
@@ -18,7 +19,7 @@ func Equality(attribute interface{}, expectedValue cty.Value) (bool, hcl.Diagnos
 		var diags hcl.Diagnostics
 		isValid, diags = equalityObject(&attribute, &expectedValue)
 		if !isValid {
-			diag.Detail = concatDiagsDetail(&diags)
+			diag.Detail = utils.ConcatDiagsDetail(&diags)
 		}
 	} else {
 		logger.Infof("Type un managed: %v", expectedValue.Type().FriendlyName())
@@ -137,12 +138,4 @@ func equalityObject(attribute *interface{}, expectedValue *cty.Value) (bool, hcl
 		}
 	}
 	return !diags.HasErrors(), diags
-}
-
-func concatDiagsDetail(diags *hcl.Diagnostics) string {
-	var diagsDetail string
-	for _, diag := range *diags {
-		diagsDetail += "- " + diag.Detail + "\n"
-	}
-	return diagsDetail
 }

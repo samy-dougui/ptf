@@ -1,26 +1,15 @@
-policy "azure_storage_container_has_legal_hold" {
-  filter {
-    type = "azurerm_storage_container"
-  }
-  condition {
-    attribute = "has_legal_hold"
-    operator  = "="
-    values    = false
-  }
-  disabled = true
-}
-
-policy "azure_storage_container_name" {
+policy "azure_storage_container_name_pattern" {
   filter {
     type = "azurerm_storage_container"
   }
   condition {
     attribute = "name"
-    operator  = "="
-    values    = "stage"
+    operator  = "re"
+    values    = "([aA-zZ]+)_([aA-zZ]+)_([aA-zZ]+)"
   }
-  severity = "error"
-  disabled = true
+  severity      = "warning"
+  error_message = ""
+  disabled      = false
 }
 
 policy "azure_storage_container_metadata" {
@@ -34,7 +23,19 @@ policy "azure_storage_container_metadata" {
   }
   severity      = "warning"
   error_message = ""
-  disabled      = true
+  disabled      = false
+}
+
+policy "azure_storage_container_has_legal_hold" {
+  filter {
+    type = "azurerm_storage_container"
+  }
+  condition {
+    attribute = "has_legal_hold"
+    operator  = "="
+    values    = false
+  }
+  disabled = false
 }
 
 policy "azure_tag" {
@@ -52,5 +53,5 @@ policy "azure_tag" {
     }
   }
   severity = "warning"
-  disabled = true
+  disabled = false
 }

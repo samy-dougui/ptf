@@ -12,12 +12,10 @@ func WriteSummary(diags *hcl.Diagnostics, policies []*policy.Policy) {
 	numberOfWarnings := getNumberOfWarnings(diags)
 	numberOfErrors := getNumberOfErrors(diags)
 	numberOfPass := getNumberOfPass(policies)
-	numberOfDisabled := numberOfPolicies - (numberOfErrors + numberOfPass + numberOfWarnings)
 	logger.Infof("Number of Policies: %v", numberOfPolicies)
 	logger.Infof("Number of Pass: %v", numberOfPass)
 	logger.Infof("Number of Warnings: %v", numberOfWarnings)
 	logger.Infof("Number of Errors: %v", numberOfErrors)
-	logger.Infof("Number of Disabled: %v", numberOfDisabled)
 }
 
 func getNumberOfWarnings(diags *hcl.Diagnostics) int {

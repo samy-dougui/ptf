@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/hashicorp/hcl/v2"
 	"github.com/samy-dougui/ptf/internal/loader"
+	"github.com/samy-dougui/ptf/internal/utils"
 	"github.com/zclconf/go-cty/cty"
 )
 
@@ -34,14 +35,24 @@ func (c *Condition) Init(block *hcl.Block) hcl.Diagnostics {
 }
 
 func (c *Condition) Check(resource *loader.ResourceChange) (bool, hcl.Diagnostic) {
-	var attribute = resource.GetAttribute(c.Attribute)
-	if attribute != nil {
-		operatorCheck, diag := OperatorMap[c.Operator](attribute, c.Values)
-		return operatorCheck, diag
+	attributes := loader.GetAttributeNew(resource.Change.After, c.Attribute)
+	var diags hcl.Diagnostics
+	var checkPassed = true
+	for _, attribute := range attributes {
+		if attribute != nil {
+			operatorCheck, diag := OperatorMap[c.Operator](attribute, c.Values)
+			checkPassed = checkPassed && operatorCheck
+			if !operatorCheck {
+				diags = append(diags, &diag)
+			}
+		} else {
+			checkPassed = false
+			var diag = hcl.Diagnostic{Detail: fmt.Sprintf("The attribute %v is not set.", c.Attribute)}
+			diags = append(diags, &diag)
+		}
+
 	}
-	return false, hcl.Diagnostic{
-		Detail: fmt.Sprintf("The attribute %v is not set.", c.Attribute),
-	}
+	return checkPassed, hcl.Diagnostic{Detail: utils.ConcatDiagsDetail(&diags)}
 }
 
 var conditionAttributes = []hcl.AttributeSchema{
