@@ -4,6 +4,8 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/hashicorp/hcl/v2"
+	"github.com/samy-dougui/ptf/internal/logging"
+	"strconv"
 	"strings"
 )
 
@@ -64,12 +66,42 @@ func (l *Loader) LoadPlan(path string) (*Plan, hcl.Diagnostics) {
 	return &plan, nil
 }
 
-func (r *ResourceChange) GetAttribute(attribute string) interface{} {
-	// TODO: it's only for the After, should be configurable
-	var _attribute = r.Change.After
-	var nestedAttributes = strings.Split(attribute, ".")
-	for _, nestedAttribute := range nestedAttributes[:len(nestedAttributes)-1] {
-		_attribute = _attribute[nestedAttribute].(map[string]interface{})
+// TODO: definitely need tests / to be moved to another package as it's not the plan loader jurisdiction
+// TODO: need to update the rest to test for each returned attribute
+// TODO: the naming of the variables should be revised
+
+func GetAttributeNew(attribute interface{}, attributeName string) []interface{} {
+	var splitAttribute = strings.Split(attributeName, ".")
+	logger := logging.GetLogger()
+	var attributes []interface{}
+	if len(splitAttribute) == 1 {
+		firstAttribute := splitAttribute[0]
+		_attribute := attribute.(map[string]interface{})
+		return []interface{}{_attribute[firstAttribute]}
+	} else {
+		firstAttribute := splitAttribute[0]
+		if !strings.Contains(firstAttribute, "[") {
+			var _attribute = attribute.(map[string]interface{})
+			attributes = append(attributes, GetAttributeNew(_attribute[firstAttribute], strings.Join(splitAttribute[1:], "."))...)
+		} else if firstAttribute != "[*]" {
+			var _attribute = attribute.([]interface{})
+			_listIndex := strings.Trim(firstAttribute, "[]")
+			listIndex, err := strconv.Atoi(_listIndex)
+			if err != nil {
+				logger.Fatalf("When using the list indexing in the condition's attribute, the value between the [ ] needs to be an integer, here it's %v", _listIndex)
+			}
+
+			if len(_attribute) < listIndex {
+				logger.Warn("The value passed inside the [ ] is larger than the list, it has been replaced by the max value possible.")
+				listIndex = len(_attribute) - 1
+			}
+			attributes = append(attributes, GetAttributeNew(_attribute[listIndex], strings.Join(splitAttribute[1:], "."))...)
+		} else {
+			var _attributes = attribute.([]interface{})
+			for _, _attribute := range _attributes {
+				attributes = append(attributes, GetAttributeNew(_attribute.(map[string]interface{}), strings.Join(splitAttribute[1:], "."))...)
+			}
+		}
 	}
-	return _attribute[nestedAttributes[len(nestedAttributes)-1]]
+	return attributes
 }

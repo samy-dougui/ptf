@@ -7,11 +7,10 @@ policy "azure_storage_container_name_pattern" {
     operator  = "re"
     values    = "([aA-zZ]+)_([aA-zZ]+)_([aA-zZ]+)"
   }
-  severity      = "error"
+  severity      = "warning"
   error_message = ""
   disabled      = false
 }
-
 
 policy "azure_storage_container_metadata" {
   filter {
@@ -24,17 +23,35 @@ policy "azure_storage_container_metadata" {
   }
   severity      = "warning"
   error_message = ""
-  disabled      = true
+  disabled      = false
 }
 
-policy "dbt_file_size" {
+policy "azure_storage_container_has_legal_hold" {
   filter {
-    type = "databricks_dbfs_file"
+    type = "azurerm_storage_container"
   }
   condition {
-    attribute = "file_size"
+    attribute = "has_legal_hold"
     operator  = "="
-    values    = 0
+    values    = false
   }
-  disabled = true
+  disabled = false
+}
+
+policy "azure_tag" {
+  filter {
+    type = "azurerm_storage_container"
+  }
+  condition {
+    attribute = "tags"
+    operator  = "="
+    values    = {
+      "environment" : "testfsdjfsdkj",
+      "id" : 1.5,
+      "key_missing" : "value",
+      "is_prod" : true
+    }
+  }
+  severity = "warning"
+  disabled = false
 }

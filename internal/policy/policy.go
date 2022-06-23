@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/hashicorp/hcl/v2"
 	"github.com/samy-dougui/ptf/internal/loader"
+	"github.com/samy-dougui/ptf/internal/logging"
 	"github.com/samy-dougui/ptf/internal/policy/condition"
 	"github.com/samy-dougui/ptf/internal/policy/filter"
 )
@@ -18,8 +19,8 @@ type Policy struct {
 	Passed       bool
 }
 
-func InitPolicies(blocks hcl.Blocks) ([]Policy, hcl.Diagnostics) {
-	policies := make([]Policy, len(blocks))
+func InitPolicies(blocks hcl.Blocks) ([]*Policy, hcl.Diagnostics) {
+	policies := make([]*Policy, 0, len(blocks))
 	var diags hcl.Diagnostics
 	for _, block := range blocks {
 		switch block.Type {
@@ -27,7 +28,7 @@ func InitPolicies(blocks hcl.Blocks) ([]Policy, hcl.Diagnostics) {
 			var policy Policy
 			policyDiags := policy.Init(block)
 			diags = append(diags, policyDiags...)
-			policies = append(policies, policy)
+			policies = append(policies, &policy)
 		default:
 			continue
 		}
@@ -35,9 +36,9 @@ func InitPolicies(blocks hcl.Blocks) ([]Policy, hcl.Diagnostics) {
 	return policies, diags
 }
 
-func ApplyPolicies(policies *[]Policy, plan *loader.Plan) hcl.Diagnostics {
+func ApplyPolicies(policies []*Policy, plan *loader.Plan) hcl.Diagnostics {
 	var diags hcl.Diagnostics
-	for _, policy := range *policies {
+	for _, policy := range policies {
 		if !policy.IsDisabled() {
 			applyDiags := policy.Apply(plan)
 			diags = append(diags, applyDiags...)
@@ -50,6 +51,7 @@ func (p *Policy) Init(block *hcl.Block) hcl.Diagnostics {
 	var diags hcl.Diagnostics
 	var policyFilter filter.Filter
 	var policyCondition condition.Condition
+	logger := logging.GetLogger()
 
 	p.Name = block.Labels[0]
 	p.initDefaultValues()
@@ -71,6 +73,7 @@ func (p *Policy) Init(block *hcl.Block) hcl.Diagnostics {
 			diags = append(diags, diagDisabled...)
 			p.Disabled = disabled.True()
 		default:
+			logger.Debugf("Unknown attribute inside policy: %v", attribute.Name)
 			continue
 		}
 	}
@@ -82,6 +85,9 @@ func (p *Policy) Init(block *hcl.Block) hcl.Diagnostics {
 		case "condition":
 			diagInitCondition := policyCondition.Init(myBlock)
 			diags = append(diags, diagInitCondition...)
+		default:
+			logger.Debugf("Unknown block inside policy: %v", myBlock.Type)
+			continue
 		}
 	}
 	p.Filter = policyFilter
