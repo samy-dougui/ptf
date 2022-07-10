@@ -5,7 +5,7 @@ import (
 	"github.com/samy-dougui/ptf/internal/config"
 	"github.com/samy-dougui/ptf/internal/loader"
 	"github.com/samy-dougui/ptf/internal/logging"
-	"github.com/samy-dougui/ptf/internal/policy"
+	p "github.com/samy-dougui/ptf/internal/policy"
 	"github.com/samy-dougui/ptf/internal/ux"
 	"github.com/spf13/cobra"
 	"os"
@@ -55,18 +55,14 @@ func run(planPath string, dirPath string) {
 	}
 
 	content, bodyDiag := body.Content(config.ConfigFileSchema)
-	policies, initDiags := policy.InitPolicies(content.Blocks)
-	applyDiags := policy.ApplyPolicies(policies, plan)
-
 	diags = append(diags, bodyDiag...)
-	diags = append(diags, initDiags...)
-	diags = append(diags, applyDiags...)
 
-	errDiag := logging.WriteDiagnostics(diags)
+	policies, initDiags := p.InitPolicies(content.Blocks)
+	diags = append(diags, initDiags...)
+
+	policyDiag := p.ApplyPolicies(policies, plan)
+	diags = append(diags, policyDiag...)
 	ux.WriteSummary(&diags, policies)
-	if errDiag != nil {
-		logger.Errorf("Error while writing the diagnostics: %v", errDiag)
-	}
 
 	if diags.HasErrors() {
 		os.Exit(1)

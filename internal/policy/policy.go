@@ -7,6 +7,8 @@ import (
 	"github.com/samy-dougui/ptf/internal/logging"
 	"github.com/samy-dougui/ptf/internal/policy/condition"
 	"github.com/samy-dougui/ptf/internal/policy/filter"
+	"github.com/samy-dougui/ptf/internal/utils"
+	"sync"
 )
 
 type Policy struct {
@@ -37,14 +39,22 @@ func InitPolicies(blocks hcl.Blocks) ([]*Policy, hcl.Diagnostics) {
 }
 
 func ApplyPolicies(policies []*Policy, plan *loader.Plan) hcl.Diagnostics {
-	var diags hcl.Diagnostics
+	var wgPolicy sync.WaitGroup
+	wgPolicy.Add(len(policies))
+	policyDiagsChannel := make(chan hcl.Diagnostics, len(policies))
+	go utils.CloseChannel(&wgPolicy, &policyDiagsChannel)
+
 	for _, policy := range policies {
-		if !policy.IsDisabled() {
-			applyDiags := policy.Apply(plan)
-			diags = append(diags, applyDiags...)
-		}
+		policy := policy
+		go func() {
+			defer wgPolicy.Done()
+			if !policy.IsDisabled() {
+				applyDiags := policy.Apply(plan)
+				policyDiagsChannel <- applyDiags
+			}
+		}()
 	}
-	return diags
+	return utils.GatherDiagFromChannel(&policyDiagsChannel)
 }
 
 func (p *Policy) Init(block *hcl.Block) hcl.Diagnostics {
