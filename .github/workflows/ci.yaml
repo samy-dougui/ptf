@@ -19,6 +19,9 @@ jobs:
       #        uses: golangci/golangci-lint-action@v3
       #        with:
       #          version: v1.46.2
+      - name: install dependencies
+        run: |
+          go install .
       - name: unit testing
         run: |
           make unit_testing
