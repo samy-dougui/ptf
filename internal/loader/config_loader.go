@@ -9,7 +9,6 @@ import (
 )
 
 func (l *Loader) LoadConfigDir(dirPath string) (hcl.Body, hcl.Diagnostics) {
-	//var diag hcl.Diagnostics
 	if isDir, err := l.FileSystem.DirExists(dirPath); !isDir {
 		if err != nil {
 			log.Fatalf("Error while loading the directory %e", err)
