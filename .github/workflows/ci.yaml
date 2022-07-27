@@ -2,11 +2,8 @@ name: CI
 
 on:
   push:
-    branches:
-      - '*'
     branches-ignore:
-      - 'main'
-
+      - main
 jobs:
   ci:
     name: continuous integration
@@ -18,7 +15,7 @@ jobs:
         uses: actions/setup-go@v3
         with:
           go-version: 1.17
-#      - name: linting
+      #      - name: linting
       #        uses: golangci/golangci-lint-action@v3
       #        with:
       #          version: v1.46.2
