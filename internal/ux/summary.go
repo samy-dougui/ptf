@@ -22,7 +22,7 @@ func getNumberOfWarnings(diags *hcl.Diagnostics) int {
 	var numberOfWarnings int
 	for _, diag := range *diags {
 		if diag.Severity == hcl.DiagWarning {
-			numberOfWarnings += 1
+			numberOfWarnings++
 		}
 	}
 	return numberOfWarnings
@@ -32,7 +32,7 @@ func getNumberOfErrors(diags *hcl.Diagnostics) int {
 	var numberOfErrors int
 	for _, diag := range *diags {
 		if diag.Severity == hcl.DiagError {
-			numberOfErrors += 1
+			numberOfErrors++
 		}
 	}
 	return numberOfErrors
@@ -42,7 +42,7 @@ func getNumberOfPass(policies []*policy.Policy) int {
 	numberOfPass := 0
 	for _, policy := range policies {
 		if policy.Passed {
-			numberOfPass += 1
+			numberOfPass++
 		}
 	}
 	return numberOfPass
