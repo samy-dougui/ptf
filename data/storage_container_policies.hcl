@@ -46,10 +46,9 @@ policy "azure_tag" {
     attribute = "tags"
     operator  = "="
     values    = {
-      "environment" : "testfsdjfsdkj",
-      "id" : 1.5,
-      "key_missing" : "value",
-      "is_prod" : true
+      "environment" : "prod",
+      "product" : "data product",
+      "team" : "champagne",
     }
   }
   severity = "warning"

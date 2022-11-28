@@ -9,7 +9,7 @@ import (
 var rootCmd = &cobra.Command{
 	Use:   "ptf",
 	Short: "ptf helps you control your Terraform plan and Terraform state",
-	Long:  `ptf is a cli that helps you control your Terraform plan and state through config file.`,
+	Long:  `ptf is a tool that helps you control your Terraform plan and state through config file.`,
 	Run: func(cmd *cobra.Command, args []string) {
 		_ = cmd.Help()
 	},
