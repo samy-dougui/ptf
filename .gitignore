@@ -1,6 +1,2 @@
-
-.idea/*
-
 data/tfplan.*
-
-ptf
+**/ptf

@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/hashicorp/hcl/v2"
 	"github.com/samy-dougui/ptf/internal/logging"
+	"github.com/samy-dougui/ptf/internal/ports"
 	"strconv"
 	"strings"
 )
@@ -39,7 +40,7 @@ type Change struct {
 	AfterSensitive  interface{}            `json:"after_sensitive"`
 }
 
-func (l *Loader) LoadPlan(path string) (*Plan, hcl.Diagnostics) {
+func (l *Loader) LoadPlan(path string) (*ports.Plan, hcl.Diagnostics) {
 	if exists, _ := l.FileSystem.Exists(path); !exists {
 		return nil, hcl.Diagnostics{
 			{
@@ -60,7 +61,7 @@ func (l *Loader) LoadPlan(path string) (*Plan, hcl.Diagnostics) {
 		}
 	}
 
-	var plan Plan
+	var plan ports.Plan
 	_ = json.Unmarshal(jsonFileBytes, &plan)
 
 	return &plan, nil

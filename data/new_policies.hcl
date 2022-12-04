@@ -3,7 +3,7 @@ policy "policy_1" {
     type = "azurerm_storage_account"
   }
   condition {
-    attribute = "foo"
+    attribute = "network_rules.[*].default_action"
     operator  = "="
     values    = "bar3"
   }

@@ -1,9 +1,9 @@
 package ports
 
 type Configuration struct {
-	Variables              []Variable
-	TerraformVersion       string
-	ProvidersConfiguration []ProviderConfiguration
+	Variables        []Variable
+	TerraformVersion string
+	Providers        []Provider
 }
 
 type Variable struct {
@@ -11,7 +11,8 @@ type Variable struct {
 	Value interface{}
 }
 
-type ProviderConfiguration struct {
-	Name              string
-	VersionConstraint string
+type Provider struct {
+	Name              string                 `json:"name"`
+	VersionConstraint string                 `json:"version_constraint"`
+	Expressions       map[string]interface{} `json:"expressions"`
 }

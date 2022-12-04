@@ -3,8 +3,8 @@ package ports
 type Resource struct {
 	Address  string
 	Type     string
-	provider string
-	Values   map[string]string
+	Provider string
+	Values   map[string]interface{}
 	Action   string
 }
 

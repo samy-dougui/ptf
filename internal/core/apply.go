@@ -5,7 +5,8 @@ import "github.com/samy-dougui/ptf/internal/ports"
 func apply(policy *ports.Policy, resources *[]*ports.Resource, configuration *ports.Configuration) ports.PolicyOutput {
 	var invalidResources []ports.InvalidResource
 	for _, resource := range *resources {
-		if policy.Condition.Values.AsString() != resource.Values[policy.Condition.Attribute] {
+
+		if resource.Type == policy.Filter.Type && policy.Condition.Values.AsString() != resource.Values[policy.Condition.Attribute] {
 			invalidResources = append(invalidResources, ports.InvalidResource{
 				Address:           resource.Address,
 				AttributeName:     policy.Condition.Attribute,
