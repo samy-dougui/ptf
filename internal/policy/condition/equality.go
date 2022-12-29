@@ -3,14 +3,13 @@ package condition
 import (
 	"fmt"
 	"github.com/hashicorp/hcl/v2"
-	"github.com/samy-dougui/ptf/internal/logging"
 	"github.com/samy-dougui/ptf/internal/utils"
 	"github.com/zclconf/go-cty/cty"
 	"github.com/zclconf/go-cty/cty/gocty"
+	"log"
 )
 
 func Equality(attribute interface{}, expectedValue cty.Value) (bool, hcl.Diagnostic) {
-	logger := logging.GetLogger()
 	var isValid bool
 	var diag = hcl.Diagnostic{}
 	if expectedValue.Type().IsPrimitiveType() {
@@ -22,13 +21,12 @@ func Equality(attribute interface{}, expectedValue cty.Value) (bool, hcl.Diagnos
 			diag.Detail = utils.ConcatDiagsDetail(&diags)
 		}
 	} else {
-		logger.Infof("Type un managed: %v", expectedValue.Type().FriendlyName())
+		log.Printf("Type un managed: %v", expectedValue.Type().FriendlyName())
 	}
 	return isValid, diag
 }
 
 func equalityPrimitive(attribute *interface{}, expectedValue *cty.Value) (bool, hcl.Diagnostic) {
-	logger := logging.GetLogger()
 	var isValid bool
 	var diag hcl.Diagnostic
 	switch expectedValue.Type() {
@@ -36,7 +34,7 @@ func equalityPrimitive(attribute *interface{}, expectedValue *cty.Value) (bool, 
 		var expectedValueTyped float64
 		err := gocty.FromCtyValue(*expectedValue, &expectedValueTyped)
 		if err != nil {
-			logger.Error(err)
+			log.Println(err)
 		}
 		isValid = (*attribute).(float64) == expectedValueTyped
 		if !isValid {
@@ -46,7 +44,7 @@ func equalityPrimitive(attribute *interface{}, expectedValue *cty.Value) (bool, 
 		var expectedValueTyped string
 		err := gocty.FromCtyValue(*expectedValue, &expectedValueTyped)
 		if err != nil {
-			logger.Error(err)
+			log.Println(err)
 		}
 		isValid = (*attribute).(string) == expectedValueTyped
 		if !isValid {
@@ -56,14 +54,14 @@ func equalityPrimitive(attribute *interface{}, expectedValue *cty.Value) (bool, 
 		var expectedValueTyped bool
 		err := gocty.FromCtyValue(*expectedValue, &expectedValueTyped)
 		if err != nil {
-			logger.Error(err)
+			log.Println(err)
 		}
 		isValid = (*attribute).(bool) == expectedValueTyped
 		if !isValid {
 			diag.Detail = fmt.Sprintf("It was expecting %v, but it's equals to %v.", expectedValueTyped, (*attribute).(bool))
 		}
 	default:
-		logger.Debug(expectedValue.Type().IsPrimitiveType())
+		log.Println(expectedValue.Type().IsPrimitiveType())
 		diag.Detail = "Default Value"
 		isValid = false
 	}

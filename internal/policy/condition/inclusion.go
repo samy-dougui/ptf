@@ -3,13 +3,12 @@ package condition
 import (
 	"fmt"
 	"github.com/hashicorp/hcl/v2"
-	"github.com/samy-dougui/ptf/internal/logging"
 	"github.com/zclconf/go-cty/cty"
 	"github.com/zclconf/go-cty/cty/gocty"
+	"log"
 )
 
 func Inclusion(attribute interface{}, expectedValue cty.Value) (bool, hcl.Diagnostic) {
-	logger := logging.GetLogger()
 	var diag hcl.Diagnostic
 	if !expectedValue.Type().IsTupleType() {
 		// TODO: should implement a validation of the policy
@@ -17,14 +16,14 @@ func Inclusion(attribute interface{}, expectedValue cty.Value) (bool, hcl.Diagno
 		diag.Detail = fmt.Sprintf("For operator \"in\": Expected a list, received a %v", expectedValue.Type().FriendlyName())
 	} else {
 		if allSameType := checkAllSameType(&expectedValue); !allSameType {
-			logger.Debug("Not all the elements of the list have the same type.")
+			log.Println("Not all the elements of the list have the same type.")
 			diag.Detail = "We couldn't apply this policy as not all the elements of the provided list have the same type."
 			return false, diag
 		}
 
 		tupleType := getType(&expectedValue)
 		if !tupleType.IsPrimitiveType() {
-			logger.Debugf("The allowed types in a list are number, string or boolean. This list has %v", tupleType.FriendlyName())
+			log.Printf("The allowed types in a list are number, string or boolean. This list has %v", tupleType.FriendlyName())
 			diag.Detail = fmt.Sprintf("We couldn't apply this policy as the only types of element allowed in a list of value are number, string and boolean.")
 			return false, diag
 		}
@@ -43,7 +42,6 @@ func Inclusion(attribute interface{}, expectedValue cty.Value) (bool, hcl.Diagno
 }
 
 func NotInclusion(attribute interface{}, expectedValue cty.Value) (bool, hcl.Diagnostic) {
-	logger := logging.GetLogger()
 	var diag hcl.Diagnostic
 	if !expectedValue.Type().IsTupleType() {
 		// TODO: should implement a validation of the policy
@@ -52,14 +50,14 @@ func NotInclusion(attribute interface{}, expectedValue cty.Value) (bool, hcl.Dia
 	} else {
 		// TODO: Maybe put this in a validator class
 		if allSameType := checkAllSameType(&expectedValue); !allSameType {
-			logger.Debug("Not all the elements of the list have the same type.")
+			log.Println("Not all the elements of the list have the same type.")
 			diag.Detail = "We couldn't apply this policy as not all the elements of the provided list have the same type."
 			return false, diag
 		}
 
 		tupleType := getType(&expectedValue)
 		if !tupleType.IsPrimitiveType() {
-			logger.Debugf("The allowed types in a list are number, string or boolean. This list has %v", tupleType.FriendlyName())
+			log.Printf("The allowed types in a list are number, string or boolean. This list has %v", tupleType.FriendlyName())
 			diag.Detail = fmt.Sprintf("We couldn't apply this policy as the only types of element allowed in a list of value are number, string and boolean.")
 			return false, diag
 		}

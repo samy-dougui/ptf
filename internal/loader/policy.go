@@ -10,7 +10,7 @@ import (
 var PolicyFileExtension = ".hcl"
 
 func LoadPolicies(dirPath string) ([]*policy.Policy, error) {
-	// TODO: better manage file loader
+	// TODO : better manage file loader
 	var policies []*policy.Policy
 	var fileLoader Loader
 	fileLoader.Init()

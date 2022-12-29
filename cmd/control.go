@@ -33,8 +33,14 @@ func init() {
 }
 
 func run(planPath string, policiesDirPath string) {
-	normalizePoliciesDir := utils.NormalizePath(policiesDirPath)
-	normalizePlanPath := utils.NormalizePath(planPath)
+	normalizePoliciesDir, err := utils.NormalizePath(policiesDirPath)
+	if err != nil {
+		panic(err)
+	}
+	normalizePlanPath, err := utils.NormalizePath(planPath)
+	if err != nil {
+		panic(err)
+	}
 	policies, err := loader.LoadPolicies(normalizePoliciesDir)
 	if err != nil {
 		log.Printf("Error while loading directory %s: %s", policiesDirPath, err)

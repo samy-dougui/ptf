@@ -5,10 +5,10 @@ import (
 	"path/filepath"
 )
 
-func NormalizePath(p string) string {
+func NormalizePath(p string) (string, error) {
 	fullPath, err := filepath.Abs(p)
 	if err != nil {
-		panic(err)
+		return "", err
 	}
-	return path.Clean(fullPath)
+	return path.Clean(fullPath), nil
 }
