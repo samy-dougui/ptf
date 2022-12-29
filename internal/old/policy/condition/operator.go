@@ -5,10 +5,10 @@ import (
 	"github.com/zclconf/go-cty/cty"
 )
 
+// TODO: Recover from panic error handling
+// TODO: Have a proper formatting for error
+
 var OperatorMap = map[string]func(interface{}, cty.Value) (bool, hcl.Diagnostic){
-	// TODO: Recover from panic error handling
-	// TODO: Have a proper formatting for error
-	// TODO: Delete hcl.diagnostic
 	"=":      Equality,
 	">":      SuperiorStrict,
 	">=":     SuperiorOrEqual,

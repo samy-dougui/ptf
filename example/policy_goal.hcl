@@ -1,4 +1,5 @@
 policy "my_goal_policy" {
+  target = "resource | configuration"
   filter {
     type = "azurerm_resource_group" # if more than one filter, should be an "and"
   }
@@ -8,5 +9,5 @@ policy "my_goal_policy" {
     values    = "" # list of values (if operator = 'in' or 'not in') or single value or dict
   }
   severity      = "error" # For now, it's always an error, could be in the future a warning
-  error_message = "" # Could be nice to customise it, should be a default one for now
+  error_message = "" # Could be nice to customise it, should be a default one for now, should be go-fmt
 }

@@ -1,18 +1,20 @@
 package cmd
 
 import (
-	"github.com/samy-dougui/ptf/cmd/control"
 	"github.com/spf13/cobra"
 	"os"
 )
 
+const version string = "0.1.0-alpha"
+
 var rootCmd = &cobra.Command{
 	Use:   "ptf",
-	Short: "ptf helps you control your Terraform plan and Terraform state",
-	Long:  `ptf is a tool that helps you control your Terraform plan and state through config file.`,
+	Short: "ptf is a Policy as Code tool that lets you control your Terraform plan.",
+	Long:  `ptf is a tool that helps you control your Terraform plan and state through configuration file.`,
 	Run: func(cmd *cobra.Command, args []string) {
 		_ = cmd.Help()
 	},
+	Version: version,
 }
 
 func Execute() {
@@ -23,5 +25,6 @@ func Execute() {
 }
 
 func init() {
-	rootCmd.AddCommand(control.ControlCmd)
+	rootCmd.AddCommand(ControlCmd)
+	rootCmd.AddCommand(ServerCmd)
 }

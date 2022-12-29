@@ -5,7 +5,7 @@ import (
 	"github.com/samy-dougui/ptf/internal/config"
 	"github.com/samy-dougui/ptf/internal/loader"
 	"github.com/samy-dougui/ptf/internal/logging"
-	p "github.com/samy-dougui/ptf/internal/policy"
+	p "github.com/samy-dougui/ptf/internal/old/policy"
 	"github.com/samy-dougui/ptf/internal/ux"
 	"github.com/spf13/cobra"
 	"os"

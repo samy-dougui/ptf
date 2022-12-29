@@ -2,7 +2,7 @@ package ux
 
 import (
 	"github.com/hashicorp/hcl/v2"
-	"github.com/samy-dougui/ptf/internal/policy"
+	"github.com/samy-dougui/ptf/internal/old/policy"
 	"testing"
 )
 

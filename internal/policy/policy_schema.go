@@ -1,4 +1,4 @@
-package ports
+package policy
 
 import "github.com/hashicorp/hcl/v2"
 
@@ -41,30 +41,4 @@ var policyBlock = []hcl.BlockHeaderSchema{
 var policyHclSchema = &hcl.BodySchema{
 	Attributes: policyAttributes,
 	Blocks:     policyBlock,
-}
-
-var filterAttributes = []hcl.AttributeSchema{
-	{
-		Name: "type",
-	},
-}
-
-var filterHclSchema = &hcl.BodySchema{
-	Attributes: filterAttributes,
-}
-
-var conditionAttributes = []hcl.AttributeSchema{
-	{
-		Name: "attribute",
-	},
-	{
-		Name: "values",
-	},
-	{
-		Name: "operator",
-	},
-}
-
-var conditionHclSchema = &hcl.BodySchema{
-	Attributes: conditionAttributes,
 }

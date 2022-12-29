@@ -1,24 +1,37 @@
 package ux
 
 import (
-	"fmt"
-	"github.com/samy-dougui/ptf/internal/ports"
+	"github.com/jedib0t/go-pretty/v6/table"
+	"github.com/samy-dougui/ptf/internal/policy"
+	"os"
 )
 
-func DisplayOutputPolicies(outputs *[]ports.PolicyOutput) {
+func PrettyDisplay(outputs *[]policy.Output) {
+	t := table.NewWriter()
+	t.SetOutputMirror(os.Stdout)
+	t.AppendHeader(table.Row{"Policy Name", "Status"})
 	for _, output := range *outputs {
-		if !output.Validated {
-			formattedOutput := formatOutput(output)
-			fmt.Println(formattedOutput)
-		}
+		status := getPrettyPolicyStatus(output.Validated, output.Severity)
+		t.AppendRow(table.Row{output.Name, status})
+		t.AppendSeparator()
 	}
+	t.SetStyle(table.StyleLight)
+	t.SortBy([]table.SortBy{
+		{Number: 2, Mode: table.Asc},
+	})
+	t.Render()
 }
 
-func formatOutput(output ports.PolicyOutput) string {
-	header := fmt.Sprintf("The policy %s has not been validated. The following resources are not respecting it: ", output.Name)
-	var body string
-	for _, invalidResource := range output.InvalidResourceList {
-		body = body + fmt.Sprintf("\t- The resource %s was expecting the attribute '%s' to be '%s' but it's equal to '%s'\n", invalidResource.Address, invalidResource.AttributeName, invalidResource.ExpectedAttribute, invalidResource.ReceivedAttribute)
+func getPrettyPolicyStatus(validPolicy bool, severity string) string {
+	var status string
+	if validPolicy {
+		status = green("OK")
+	} else {
+		if severity == "error" {
+			status = red("ERR")
+		} else {
+			status = yellow("WARN")
+		}
 	}
-	return fmt.Sprintf("%s\n%s", header, body)
+	return status
 }

@@ -6,8 +6,9 @@ policy "azure_storage_container_name_pattern" {
     attribute = "name"
     operator  = "re"
     values    = "([aA-zZ]+)_([aA-zZ]+)_([aA-zZ]+)"
+    #    values    = "([aA-zZ]+)"
   }
-  severity      = "warning"
+  severity      = "error"
   error_message = ""
   disabled      = false
 }
@@ -19,7 +20,7 @@ policy "azure_storage_container_metadata" {
   condition {
     attribute = "metadata.hdi_version"
     operator  = "="
-    values    = "2013"
+    values    = "2013-09-01"
   }
   severity      = "warning"
   error_message = ""

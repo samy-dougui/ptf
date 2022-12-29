@@ -2,38 +2,27 @@ package filter
 
 import (
 	"github.com/hashicorp/hcl/v2"
-	"github.com/samy-dougui/ptf/internal/loader"
+	"github.com/samy-dougui/ptf/internal/ports"
 )
 
 type Filter struct {
 	Type string
 }
 
-func (f *Filter) Init(block *hcl.Block) hcl.Diagnostics {
+func (f *Filter) Init(block *hcl.Block) {
 	var diags hcl.Diagnostics
-	filterContent, _, diag := block.Body.PartialContent(Schema)
-	diags = append(diags, diag...)
-	for _, filterAttribute := range filterContent.Attributes {
-		switch filterAttribute.Name {
+	content, _, _ := block.Body.PartialContent(hclSchema)
+	for _, attribute := range content.Attributes {
+		switch attribute.Name {
 		case "type":
-			filterType, diag := filterAttribute.Expr.Value(nil)
+			filterType, diag := attribute.Expr.Value(nil)
 			f.Type = filterType.AsString()
 			diags = append(diags, diag...)
 		}
 	}
-	return diags
 }
 
-// The Filtering logic should be included in this function
-func (f *Filter) Apply(resource *loader.ResourceChange) bool {
-	return f.Type == resource.Type
-}
-
-var filterAttributes = []hcl.AttributeSchema{
-	{
-		Name: "type",
-	},
-}
-var Schema = &hcl.BodySchema{
-	Attributes: filterAttributes,
+func (f *Filter) Apply(resource *ports.Resource) bool {
+	// NOTE: it only works with resource type for now
+	return resource.Type == f.Type
 }

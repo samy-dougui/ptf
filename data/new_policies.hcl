@@ -5,7 +5,7 @@ policy "policy_1" {
   condition {
     attribute = "network_rules.[*].default_action"
     operator  = "="
-    values    = "bar3"
+    values    = "Allow"
   }
   severity      = "error"
   error_message = ""
@@ -19,6 +19,21 @@ policy "policy_2" {
   condition {
     attribute = "foo"
     operator  = "="
+    values    = "bar2"
+  }
+  severity      = "error"
+  error_message = ""
+  disabled      = false
+}
+
+policy "policy_3" {
+  target = "resource"
+  filter {
+    type = "azurerm_storage_account"
+  }
+  condition {
+    attribute = "foo"
+    operator  = ">="
     values    = "bar2"
   }
   severity      = "error"

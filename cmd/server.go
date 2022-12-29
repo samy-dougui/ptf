@@ -1,0 +1,22 @@
+package cmd
+
+import (
+	"fmt"
+	"github.com/spf13/cobra"
+)
+
+var (
+	port int
+)
+
+var ServerCmd = &cobra.Command{
+	Use:   "server",
+	Short: "Start a server that validates the Terraform plan given through HTTP request",
+	Run: func(cmd *cobra.Command, args []string) {
+		fmt.Printf("Server up and running at port %v\n", port)
+	},
+}
+
+func init() {
+	ServerCmd.Flags().IntVarP(&port, "port", "p", 8080, "Ports the server should be listening to.")
+}
