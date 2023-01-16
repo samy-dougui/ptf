@@ -19,10 +19,10 @@ type Policy struct {
 }
 
 type Output struct {
-	Name                string                  `json:"name"`
-	Validated           bool                    `json:"is_valid"`
-	Severity            string                  `json:"severity,omitempty"`
-	InvalidResourceList []ports.InvalidResource `json:"invalid_resource,omitempty"`
+	Name             string                  `json:"name"`
+	Validated        bool                    `json:"is_valid"`
+	Severity         string                  `json:"severity,omitempty"`
+	InvalidResources []ports.InvalidResource `json:"invalid_resources,omitempty"`
 }
 
 func (p *Policy) Init(policyBlock *hcl.Block) {

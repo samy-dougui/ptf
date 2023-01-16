@@ -15,3 +15,15 @@ type InvalidResource struct {
 	ReceivedAttribute interface{} `json:"received_attribute"`
 	ErrorMessage      string      `json:"error_message"`
 }
+
+type NewInvalidResource struct {
+	Address           string
+	AttributeName     string
+	ErrorMessage      string
+	InvalidAttributes []InvalidAttribute
+}
+
+type InvalidAttribute struct {
+	ExpectedValue interface{}
+	ReceivedValue interface{}
+}

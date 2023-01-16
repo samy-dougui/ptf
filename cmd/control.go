@@ -1,6 +1,8 @@
 package cmd
 
 import (
+	"encoding/json"
+	"fmt"
 	"github.com/samy-dougui/ptf/internal/core"
 	"github.com/samy-dougui/ptf/internal/loader"
 	"github.com/samy-dougui/ptf/internal/utils"
@@ -48,6 +50,8 @@ func run(planPath string, policiesDirPath string) {
 	}
 	resources, configuration := loader.LoadLocalResources(normalizePlanPath)
 	validationOutput := core.Validate(&policies, &resources, &configuration)
+	ans, _ := json.MarshalIndent(validationOutput, "", "  ")
+	fmt.Println(string(ans))
 	ux.PrettyDisplay(&validationOutput)
 	// TODO: os exit if failure => flag fail on warning
 	return

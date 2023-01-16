@@ -1,7 +1,6 @@
 package utils
 
 import (
-	"errors"
 	"fmt"
 	"strconv"
 	"strings"
@@ -9,7 +8,13 @@ import (
 
 type HASHMAP = map[string]interface{}
 
-var MissingAttributeError = errors.New("missing attribute")
+type MissingAttributeError struct {
+	attributeName string
+}
+
+func (e MissingAttributeError) Error() string {
+	return fmt.Sprintf("attribute %s is not defined", e.attributeName)
+}
 
 //var AttributeNameFormatError = errors.New("improper attribute name format")
 
@@ -21,7 +26,9 @@ func GetResourceAttribute(nestedMap interface{}, attributeName string) ([]interf
 	if len(attributeNameParts) == 1 {
 		_attribute := nestedMap.(HASHMAP)[attributeNameParts[0]]
 		if _attribute == nil {
-			return nil, MissingAttributeError
+			return nil, MissingAttributeError{
+				attributeName: attributeName,
+			}
 		}
 		return []interface{}{_attribute}, nil
 	} else {

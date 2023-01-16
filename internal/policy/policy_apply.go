@@ -1,6 +1,8 @@
 package policy
 
 import (
+	"errors"
+	"fmt"
 	"github.com/samy-dougui/ptf/internal/ports"
 	"github.com/samy-dougui/ptf/internal/utils"
 )
@@ -11,16 +13,25 @@ func (p *Policy) Apply(resources *[]*ports.Resource, configuration *ports.Config
 	for _, resource := range filteredResources {
 		attributes, err := utils.GetResourceAttribute(resource.Values, p.Condition.Attribute)
 		if err != nil {
-			// TODO: check if error is missing attributes => create real error
 			// TODO: make error message more explicit
-			invalidResources = append(invalidResources, ports.InvalidResource{
-				Address:           resource.Address,
-				AttributeName:     p.Condition.Attribute,
-				ReceivedAttribute: attributes,
-				ErrorMessage:      "error retrieving attribute",
-			})
+			if errors.As(err, &utils.MissingAttributeError{}) {
+				invalidResources = append(invalidResources, ports.InvalidResource{
+					Address:           resource.Address,
+					AttributeName:     p.Condition.Attribute,
+					ReceivedAttribute: attributes,
+					ErrorMessage:      err.Error(),
+				})
+			} else {
+				invalidResources = append(invalidResources, ports.InvalidResource{
+					Address:           resource.Address,
+					AttributeName:     p.Condition.Attribute,
+					ReceivedAttribute: attributes,
+					ErrorMessage:      fmt.Sprintf("error retrieving attribute %v", p.Condition.Attribute),
+				})
+			}
 		} else {
-			if validResource := p.Condition.Check(attributes); !validResource {
+			validResource := p.Condition.Check(attributes) // TODO: return list of invalid attributes, if list is nil => valid resource
+			if !validResource {
 				invalidResources = append(invalidResources, ports.InvalidResource{
 					Address:           resource.Address,
 					AttributeName:     p.Condition.Attribute,
@@ -28,7 +39,6 @@ func (p *Policy) Apply(resources *[]*ports.Resource, configuration *ports.Config
 					ErrorMessage:      p.ErrorMessage,
 				})
 			}
-
 		}
 	}
 
@@ -39,10 +49,10 @@ func (p *Policy) Apply(resources *[]*ports.Resource, configuration *ports.Config
 		severity = p.Severity
 	}
 	return Output{
-		Name:                p.Name,
-		Validated:           validPolicy,
-		InvalidResourceList: invalidResources,
-		Severity:            severity,
+		Name:             p.Name,
+		Validated:        validPolicy,
+		InvalidResources: invalidResources,
+		Severity:         severity,
 	}
 }
 
