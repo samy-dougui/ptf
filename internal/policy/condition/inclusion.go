@@ -2,75 +2,63 @@ package condition
 
 import (
 	"fmt"
-	"github.com/hashicorp/hcl/v2"
+	"github.com/samy-dougui/ptf/internal/ports"
 	"github.com/zclconf/go-cty/cty"
 	"github.com/zclconf/go-cty/cty/gocty"
 	"log"
 )
 
-func Inclusion(attribute interface{}, expectedValue cty.Value) (bool, hcl.Diagnostic) {
-	var diag hcl.Diagnostic
+func Inclusion(attribute interface{}, expectedValue cty.Value) (bool, ports.InvalidAttribute, error) {
 	if !expectedValue.Type().IsTupleType() {
-		// TODO: should implement a validation of the policy
-		diag.Severity = hcl.DiagError
-		diag.Detail = fmt.Sprintf("For operator \"in\": Expected a list, received a %v", expectedValue.Type().FriendlyName())
+		return false, ports.InvalidAttribute{}, fmt.Errorf("the 'in' operator should be used with a list, but received %s", expectedValue.Type().FriendlyName())
 	} else {
 		if allSameType := checkAllSameType(&expectedValue); !allSameType {
-			log.Println("Not all the elements of the list have the same type.")
-			diag.Detail = "We couldn't apply this policy as not all the elements of the provided list have the same type."
-			return false, diag
+			log.Println("not all the same type")
+			return false, ports.InvalidAttribute{}, fmt.Errorf("the 'in' operator only works with a list of the same type")
 		}
 
 		tupleType := getType(&expectedValue)
 		if !tupleType.IsPrimitiveType() {
-			log.Printf("The allowed types in a list are number, string or boolean. This list has %v", tupleType.FriendlyName())
-			diag.Detail = fmt.Sprintf("We couldn't apply this policy as the only types of element allowed in a list of value are number, string and boolean.")
-			return false, diag
+			return false, ports.InvalidAttribute{}, fmt.Errorf("the 'in' operator only work for a list of element of type number, string and boolean")
 		}
-
 		it := expectedValue.ElementIterator()
 		attributeTyped, _ := gocty.ToCtyValue(attribute, tupleType)
 		for it.Next() {
 			if _, value := it.Element(); value.Equals(attributeTyped).True() {
-				return true, diag
+				return true, ports.InvalidAttribute{}, nil
 			}
 		}
-		diag.Detail = fmt.Sprintf("\"%v\" is not included in the provided list.", attribute)
-		return false, diag
+		return false, ports.InvalidAttribute{
+			ReceivedValue: attribute,
+		}, nil
 	}
-	return false, diag
 }
 
-func NotInclusion(attribute interface{}, expectedValue cty.Value) (bool, hcl.Diagnostic) {
-	var diag hcl.Diagnostic
+func NotInclusion(attribute interface{}, expectedValue cty.Value) (bool, ports.InvalidAttribute, error) {
 	if !expectedValue.Type().IsTupleType() {
 		// TODO: should implement a validation of the policy
-		diag.Detail = fmt.Sprintf("For operator \"in\": Expected a list, received a %v", expectedValue.Type().FriendlyName())
-		return false, diag
+		return false, ports.InvalidAttribute{}, fmt.Errorf("the 'not in' operator should be used with a list, but received %s", expectedValue.Type().FriendlyName())
 	} else {
 		// TODO: Maybe put this in a validator class
 		if allSameType := checkAllSameType(&expectedValue); !allSameType {
-			log.Println("Not all the elements of the list have the same type.")
-			diag.Detail = "We couldn't apply this policy as not all the elements of the provided list have the same type."
-			return false, diag
+			return false, ports.InvalidAttribute{}, fmt.Errorf("the 'not in' operator only works with a list of the same type")
 		}
 
 		tupleType := getType(&expectedValue)
 		if !tupleType.IsPrimitiveType() {
-			log.Printf("The allowed types in a list are number, string or boolean. This list has %v", tupleType.FriendlyName())
-			diag.Detail = fmt.Sprintf("We couldn't apply this policy as the only types of element allowed in a list of value are number, string and boolean.")
-			return false, diag
+			return false, ports.InvalidAttribute{}, fmt.Errorf("the 'not in' operator only work for a list of element of type number, string and boolean")
 		}
 
 		it := expectedValue.ElementIterator()
 		attributeTyped, _ := gocty.ToCtyValue(attribute, tupleType)
 		for it.Next() {
 			if _, value := it.Element(); value.Equals(attributeTyped).True() {
-				diag.Detail = fmt.Sprintf("\"%v\" is equals to one of the element of the provided list.", attribute)
-				return false, diag
+				return false, ports.InvalidAttribute{
+					ReceivedValue: attribute,
+				}, nil
 			}
 		}
-		return true, diag
+		return true, ports.InvalidAttribute{}, nil
 	}
 }
 

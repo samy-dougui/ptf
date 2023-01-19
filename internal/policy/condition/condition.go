@@ -2,7 +2,9 @@ package condition
 
 import (
 	"github.com/hashicorp/hcl/v2"
+	"github.com/samy-dougui/ptf/internal/ports"
 	"github.com/zclconf/go-cty/cty"
+	"log"
 )
 
 type Condition struct {
@@ -28,11 +30,18 @@ func (c *Condition) Init(block *hcl.Block) {
 	}
 }
 
-func (c *Condition) Check(attributes []interface{}) bool {
-	var validResource = true
+func (c *Condition) Check(attributes []interface{}) []ports.InvalidAttribute {
+	var invalidAttributes []ports.InvalidAttribute
 	for _, attribute := range attributes {
-		validAttribute, _ := OperatorMap[c.Operator](attribute, c.Values)
-		validResource = validResource && validAttribute
+		isValid, invalidAttribute, err := OperatorMap[c.Operator](attribute, c.Values)
+		if err != nil {
+			// TODO: if err, we should return err (or list err) and return it to user
+			log.Println(err) // TODO: use logger
+		} else {
+			if !isValid {
+				invalidAttributes = append(invalidAttributes, invalidAttribute)
+			}
+		}
 	}
-	return validResource
+	return invalidAttributes
 }

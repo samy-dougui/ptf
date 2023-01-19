@@ -3,10 +3,11 @@ package ux
 import "fmt"
 
 const (
-	ColorDefault = "\x1b[39m"
-	ColorRed     = "\x1b[91m"
 	ColorGreen   = "\x1b[32m"
 	ColorYellow  = "\x1b[33m"
+	ColorDefault = "\x1b[39m"
+	ColorRed     = "\x1b[91m"
+	ColorBlue    = "\x1b[94m"
 )
 
 func green(str string) string {
@@ -19,4 +20,8 @@ func red(str string) string {
 
 func yellow(str string) string {
 	return fmt.Sprintf("%s%s%s", ColorYellow, str, ColorDefault)
+}
+
+func blue(str string) string {
+	return fmt.Sprintf("%s%s%s", ColorBlue, str, ColorDefault)
 }

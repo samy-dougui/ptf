@@ -8,9 +8,14 @@ import (
 	"github.com/samy-dougui/ptf/internal/ports"
 )
 
+const (
+	WARNING = "warning"
+	ERROR   = "error"
+)
+
 type Policy struct {
 	Name         string
-	Type         string
+	Target       string
 	Severity     string
 	ErrorMessage string
 	Disabled     bool
@@ -60,5 +65,5 @@ func (p *Policy) Init(policyBlock *hcl.Block) {
 
 func (p *Policy) defaultInit() {
 	p.Disabled = false
-	p.Severity = "error"
+	p.Severity = ERROR
 }

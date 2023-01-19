@@ -9,21 +9,13 @@ type Resource struct {
 }
 
 type InvalidResource struct {
-	Address           string      `json:"address"`
-	AttributeName     string      `json:"attribute_name"`
-	ExpectedAttribute interface{} `json:"expected_attribute"`
-	ReceivedAttribute interface{} `json:"received_attribute"`
-	ErrorMessage      string      `json:"error_message"`
-}
-
-type NewInvalidResource struct {
-	Address           string
-	AttributeName     string
-	ErrorMessage      string
-	InvalidAttributes []InvalidAttribute
+	Address           string             `json:"address"`
+	AttributeName     string             `json:"attribute_name"`
+	ErrorMessage      string             `json:"error_message"`
+	InvalidAttributes []InvalidAttribute `json:"invalid_attributes"`
 }
 
 type InvalidAttribute struct {
-	ExpectedValue interface{}
-	ReceivedValue interface{}
+	ExpectedValue interface{} `json:"expected_attribute,omitempty"`
+	ReceivedValue interface{} `json:"received_attribute,omitempty"`
 }

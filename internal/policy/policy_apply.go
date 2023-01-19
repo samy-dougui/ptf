@@ -16,29 +16,35 @@ func (p *Policy) Apply(resources *[]*ports.Resource, configuration *ports.Config
 			// TODO: make error message more explicit
 			if errors.As(err, &utils.MissingAttributeError{}) {
 				invalidResources = append(invalidResources, ports.InvalidResource{
-					Address:           resource.Address,
-					AttributeName:     p.Condition.Attribute,
-					ReceivedAttribute: attributes,
-					ErrorMessage:      err.Error(),
+					Address:       resource.Address,
+					AttributeName: p.Condition.Attribute,
+					ErrorMessage:  err.Error(),
 				})
 			} else {
 				invalidResources = append(invalidResources, ports.InvalidResource{
-					Address:           resource.Address,
-					AttributeName:     p.Condition.Attribute,
-					ReceivedAttribute: attributes,
-					ErrorMessage:      fmt.Sprintf("error retrieving attribute %v", p.Condition.Attribute),
+					Address:       resource.Address,
+					AttributeName: p.Condition.Attribute,
+					ErrorMessage:  fmt.Sprintf("error retrieving attribute %v", p.Condition.Attribute),
 				})
 			}
 		} else {
-			validResource := p.Condition.Check(attributes) // TODO: return list of invalid attributes, if list is nil => valid resource
-			if !validResource {
+			invalidAttributes := p.Condition.Check(attributes) // TODO: return list of invalid attributes, if list is nil => valid resource
+			if len(invalidAttributes) >= 1 {
 				invalidResources = append(invalidResources, ports.InvalidResource{
 					Address:           resource.Address,
 					AttributeName:     p.Condition.Attribute,
-					ReceivedAttribute: attributes,
-					ErrorMessage:      p.ErrorMessage,
+					ErrorMessage:      "Invalid attribute",
+					InvalidAttributes: invalidAttributes,
 				})
 			}
+			//if !invalidAttributes {
+			//	invalidResources = append(invalidResources, ports.InvalidResource{
+			//		Address:           resource.Address,
+			//		AttributeName:     p.Condition.Attribute,
+			//		ReceivedAttribute: attributes,
+			//		ErrorMessage:      p.ErrorMessage,
+			//	})
+			//}
 		}
 	}
 

@@ -1,44 +1,40 @@
 package condition
 
 import (
+	"errors"
 	"fmt"
-	"github.com/hashicorp/hcl/v2"
-	"github.com/samy-dougui/ptf/internal/utils"
+	"github.com/samy-dougui/ptf/internal/ports"
 	"github.com/zclconf/go-cty/cty"
 	"github.com/zclconf/go-cty/cty/gocty"
 	"log"
 )
 
-func Equality(attribute interface{}, expectedValue cty.Value) (bool, hcl.Diagnostic) {
-	var isValid bool
-	var diag = hcl.Diagnostic{}
+func Equality(attribute interface{}, expectedValue cty.Value) (bool, ports.InvalidAttribute, error) {
 	if expectedValue.Type().IsPrimitiveType() {
-		isValid, diag = equalityPrimitive(&attribute, &expectedValue)
+		return equalityPrimitive(&attribute, &expectedValue)
 	} else if expectedValue.Type().IsObjectType() {
-		var diags hcl.Diagnostics
-		isValid, diags = equalityObject(&attribute, &expectedValue)
-		if !isValid {
-			diag.Detail = utils.ConcatDiagsDetail(&diags)
-		}
+		return equalityObject(&attribute, &expectedValue)
 	} else {
-		log.Printf("Type un managed: %v", expectedValue.Type().FriendlyName())
+		return false, ports.InvalidAttribute{}, fmt.Errorf("unsupported type %s", expectedValue.Type().FriendlyName())
 	}
-	return isValid, diag
 }
 
-func equalityPrimitive(attribute *interface{}, expectedValue *cty.Value) (bool, hcl.Diagnostic) {
-	var isValid bool
-	var diag hcl.Diagnostic
+func equalityPrimitive(attribute *interface{}, expectedValue *cty.Value) (bool, ports.InvalidAttribute, error) {
 	switch expectedValue.Type() {
 	case cty.Number:
 		var expectedValueTyped float64
 		err := gocty.FromCtyValue(*expectedValue, &expectedValueTyped)
 		if err != nil {
-			log.Println(err)
+			return false, ports.InvalidAttribute{}, err
 		}
-		isValid = (*attribute).(float64) == expectedValueTyped
+		isValid := (*attribute).(float64) == expectedValueTyped
 		if !isValid {
-			diag.Detail = fmt.Sprintf("It was expecting %v, but it's equals to %v.", expectedValueTyped, (*attribute).(float64))
+			return isValid, ports.InvalidAttribute{
+				ExpectedValue: expectedValueTyped,
+				ReceivedValue: (*attribute).(float64),
+			}, nil
+		} else {
+			return true, ports.InvalidAttribute{}, nil
 		}
 	case cty.String:
 		var expectedValueTyped string
@@ -46,9 +42,14 @@ func equalityPrimitive(attribute *interface{}, expectedValue *cty.Value) (bool, 
 		if err != nil {
 			log.Println(err)
 		}
-		isValid = (*attribute).(string) == expectedValueTyped
+		isValid := (*attribute).(string) == expectedValueTyped
 		if !isValid {
-			diag.Detail = fmt.Sprintf("It was expecting %v, but it's equals to %v.", expectedValueTyped, (*attribute).(string))
+			return isValid, ports.InvalidAttribute{
+				ExpectedValue: expectedValueTyped,
+				ReceivedValue: (*attribute).(string),
+			}, nil
+		} else {
+			return true, ports.InvalidAttribute{}, nil
 		}
 	case cty.Bool:
 		var expectedValueTyped bool
@@ -56,84 +57,87 @@ func equalityPrimitive(attribute *interface{}, expectedValue *cty.Value) (bool, 
 		if err != nil {
 			log.Println(err)
 		}
-		isValid = (*attribute).(bool) == expectedValueTyped
+		isValid := (*attribute).(bool) == expectedValueTyped
 		if !isValid {
-			diag.Detail = fmt.Sprintf("It was expecting %v, but it's equals to %v.", expectedValueTyped, (*attribute).(bool))
+			return isValid, ports.InvalidAttribute{
+				ExpectedValue: expectedValueTyped,
+				ReceivedValue: (*attribute).(bool),
+			}, nil
+		} else {
+			return true, ports.InvalidAttribute{}, nil
 		}
 	default:
-		log.Println(expectedValue.Type().IsPrimitiveType())
-		diag.Detail = "Default Value"
-		isValid = false
+		return false, ports.InvalidAttribute{}, fmt.Errorf("invalid type %s", expectedValue.Type().FriendlyName())
 	}
-	return isValid, diag
 }
 
-func equalityObject(attribute *interface{}, expectedValue *cty.Value) (bool, hcl.Diagnostics) {
-	var diags hcl.Diagnostics
-	attributeTyped := (*attribute).(map[string]interface{})
-	for key, value := range expectedValue.AsValueMap() {
-		if attributeValue, ok := attributeTyped[key]; ok {
-			switch attributeValue.(type) {
-			case string:
-				if value.Type() != cty.String {
-					diags = append(diags, &hcl.Diagnostic{
-						Severity: hcl.DiagError,
-						Detail:   fmt.Sprintf("Expected a %v for the key \"%v\", but got a string", value.Type().FriendlyName(), key),
-					})
-				} else {
-					var expectedValueTyped string
-					_ = gocty.FromCtyValue(value, &expectedValueTyped) // TODO: handle error
-					if expectedValueTyped != attributeValue.(string) {
-						diags = append(diags, &hcl.Diagnostic{
-							Severity: hcl.DiagError,
-							Detail:   fmt.Sprintf("The key \"%v\" was expecting %v but got %v", key, expectedValueTyped, attributeValue.(string)),
-						})
-					}
-				}
-			case float64:
-				if value.Type() != cty.Number {
-					diags = append(diags, &hcl.Diagnostic{
-						Severity: hcl.DiagError,
-						Detail:   fmt.Sprintf("Expected a %v for the key \"%v\", but got a float64", value.Type().FriendlyName(), key),
-					})
-				} else {
-					var expectedValueTyped float64
-					_ = gocty.FromCtyValue(value, &expectedValueTyped)
-					if expectedValueTyped != attributeValue.(float64) {
-						diags = append(diags, &hcl.Diagnostic{
-							Severity: hcl.DiagError,
-							Detail:   fmt.Sprintf("The key \"%v\" was expecting %v but got %v", key, expectedValueTyped, attributeValue.(float64)),
-						})
-					}
-				}
-			case bool:
-				if value.Type() != cty.Bool {
-					diags = append(diags, &hcl.Diagnostic{
-						Severity: hcl.DiagError,
-						Detail:   fmt.Sprintf("Expected a %v for the key \"%v\", but got a boolean", value.Type().FriendlyName(), key),
-					})
-				} else {
-					var expectedValueTyped bool
-					_ = gocty.FromCtyValue(value, &expectedValueTyped)
-					if expectedValueTyped != attributeValue.(bool) {
-						diags = append(diags, &hcl.Diagnostic{
-							Severity: hcl.DiagError,
-							Detail:   fmt.Sprintf("The key \"%v\" was expecting %v but got %v", key, expectedValueTyped, attributeValue.(bool)),
-						})
-					}
-				}
-			default:
-				diags = append(diags, &hcl.Diagnostic{
-					Severity: hcl.DiagError,
-					Detail:   "The only permitted values for testing the equality of two dictionaries are string, float64 and boolean",
-				})
-			}
-		} else {
-			diags = append(diags, &hcl.Diagnostic{
-				Severity: hcl.DiagError,
-				Detail:   fmt.Sprintf("The key \"%v\" is not set", key),
-			})
-		}
-	}
-	return !diags.HasErrors(), diags
+func equalityObject(attribute *interface{}, expectedValue *cty.Value) (bool, ports.InvalidAttribute, error) {
+	return false, ports.InvalidAttribute{}, errors.New("dictionaries are not supported yet for the operator '='")
+	//var diags hcl.Diagnostics
+	//attributeTyped := (*attribute).(map[string]interface{})
+	//for key, value := range expectedValue.AsValueMap() {
+	//	if attributeValue, ok := attributeTyped[key]; ok {
+	//		switch attributeValue.(type) {
+	//		case string:
+	//			if value.Type() != cty.String {
+	//				diags = append(diags, &hcl.Diagnostic{
+	//					Severity: hcl.DiagError,
+	//					Detail:   fmt.Sprintf("Expected a %v for the key \"%v\", but got a string", value.Type().FriendlyName(), key),
+	//				})
+	//			} else {
+	//				var expectedValueTyped string
+	//				_ = gocty.FromCtyValue(value, &expectedValueTyped) // TODO: handle error
+	//				if expectedValueTyped != attributeValue.(string) {
+	//					diags = append(diags, &hcl.Diagnostic{
+	//						Severity: hcl.DiagError,
+	//						Detail:   fmt.Sprintf("The key \"%v\" was expecting %v but got %v", key, expectedValueTyped, attributeValue.(string)),
+	//					})
+	//				}
+	//			}
+	//		case float64:
+	//			if value.Type() != cty.Number {
+	//				diags = append(diags, &hcl.Diagnostic{
+	//					Severity: hcl.DiagError,
+	//					Detail:   fmt.Sprintf("Expected a %v for the key \"%v\", but got a float64", value.Type().FriendlyName(), key),
+	//				})
+	//			} else {
+	//				var expectedValueTyped float64
+	//				_ = gocty.FromCtyValue(value, &expectedValueTyped)
+	//				if expectedValueTyped != attributeValue.(float64) {
+	//					diags = append(diags, &hcl.Diagnostic{
+	//						Severity: hcl.DiagError,
+	//						Detail:   fmt.Sprintf("The key \"%v\" was expecting %v but got %v", key, expectedValueTyped, attributeValue.(float64)),
+	//					})
+	//				}
+	//			}
+	//		case bool:
+	//			if value.Type() != cty.Bool {
+	//				diags = append(diags, &hcl.Diagnostic{
+	//					Severity: hcl.DiagError,
+	//					Detail:   fmt.Sprintf("Expected a %v for the key \"%v\", but got a boolean", value.Type().FriendlyName(), key),
+	//				})
+	//			} else {
+	//				var expectedValueTyped bool
+	//				_ = gocty.FromCtyValue(value, &expectedValueTyped)
+	//				if expectedValueTyped != attributeValue.(bool) {
+	//					diags = append(diags, &hcl.Diagnostic{
+	//						Severity: hcl.DiagError,
+	//						Detail:   fmt.Sprintf("The key \"%v\" was expecting %v but got %v", key, expectedValueTyped, attributeValue.(bool)),
+	//					})
+	//				}
+	//			}
+	//		default:
+	//			diags = append(diags, &hcl.Diagnostic{
+	//				Severity: hcl.DiagError,
+	//				Detail:   "The only permitted values for testing the equality of two dictionaries are string, float64 and boolean",
+	//			})
+	//		}
+	//	} else {
+	//		diags = append(diags, &hcl.Diagnostic{
+	//			Severity: hcl.DiagError,
+	//			Detail:   fmt.Sprintf("The key \"%v\" is not set", key),
+	//		})
+	//	}
+	//}
+	//return !diags.HasErrors(), diags
 }
