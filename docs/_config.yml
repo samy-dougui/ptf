@@ -3,6 +3,6 @@ description: PTF documentation
 remote_theme: just-the-docs/just-the-docs
 
 url: https://samy-dougui.github.io/ptf
-
-aux_links: # remove if you don't want this link to appear on your pages
-  Template Repository: https://github.com/samy-dougui/ptf
+#
+#aux_links: # remove if you don't want this link to appear on your pages
+#  Template Repository: https://github.com/samy-dougui/ptf
