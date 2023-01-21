@@ -1,2 +1,2 @@
-\# Operators
+# Operators
 what is an operator
