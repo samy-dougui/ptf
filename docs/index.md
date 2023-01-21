@@ -3,7 +3,6 @@ layout: default
 title: PTF
 nav_order: 1
 has_children: false
-permalink: /docs/index.md
 ---
 
 # PTF 
