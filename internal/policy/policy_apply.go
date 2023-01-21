@@ -28,7 +28,7 @@ func (p *Policy) Apply(resources *[]*ports.Resource, configuration *ports.Config
 				})
 			}
 		} else {
-			invalidAttributes := p.Condition.Check(attributes) // TODO: return list of invalid attributes, if list is nil => valid resource
+			invalidAttributes := p.Condition.Check(attributes)
 			if len(invalidAttributes) >= 1 {
 				invalidResources = append(invalidResources, ports.InvalidResource{
 					Address:           resource.Address,
@@ -37,14 +37,6 @@ func (p *Policy) Apply(resources *[]*ports.Resource, configuration *ports.Config
 					InvalidAttributes: invalidAttributes,
 				})
 			}
-			//if !invalidAttributes {
-			//	invalidResources = append(invalidResources, ports.InvalidResource{
-			//		Address:           resource.Address,
-			//		AttributeName:     p.Condition.Attribute,
-			//		ReceivedAttribute: attributes,
-			//		ErrorMessage:      p.ErrorMessage,
-			//	})
-			//}
 		}
 	}
 

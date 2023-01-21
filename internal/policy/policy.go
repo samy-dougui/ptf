@@ -15,7 +15,7 @@ const (
 
 type Policy struct {
 	Name         string
-	Target       string
+	Target       string // unused for now, will come in a future release
 	Severity     string
 	ErrorMessage string
 	Disabled     bool
