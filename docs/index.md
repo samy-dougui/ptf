@@ -9,10 +9,32 @@ has_children: false
 
 PTF (Policy Terraform) is a Policy-as-Code framework to control your Terraform deployment.
 
-## Why PTF ?
+# Installation
 
-PTF allows you to easily define policy using the same language as Terraform.
+To install PTF, follow [this page](./installation.md).
 
+# How does it work?
+
+Before applying the planned changes, Terraform creates a plan and shows you all the action it will do. Before applying these changes, you need to make sure they are compliant with your standards. That's where PTF comes into play: it will sit between your Terraform plan and your Terraform apply, and make sure the Terraform plan respects the policies you have defined.
+
+# Basic Usage
+
+Once you have PTF installed on your machine, you can now control your Terraform plan.
+
+To obtain your plan, you can follow this procedure:
+
+1. `terraform init`
+2. `terraform plan --out tfplan.binary`
+3. `terraform show -json tfplan.binary > tfplan.json`
+
+Once you have your Terraform plan, you can control if it's compliant by executing: `ptf control -p tfplan.json --chdir policies/`
+This will control that your `tfplan.json` respects all of the policies defined in the directory `policies/`. To know how to define a policy, head [here](./policy.md)
+
+If your checks are successful, you can then apply the changes: `terraform apply tfplan.binary`
+
+# Why PTF ?
+
+PTF allows you to easily define policy using the same language as Terraform (HCL) and allows you to define your own policy.
 
 ## Why not OPA ?
 
