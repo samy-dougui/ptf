@@ -9,8 +9,9 @@ import (
 )
 
 const (
-	WARNING = "warning"
-	ERROR   = "error"
+	WARNING         = "warning"
+	ERROR           = "error"
+	TARGET_RESOURCE = "resource"
 )
 
 type Policy struct {
@@ -66,4 +67,5 @@ func (p *Policy) Init(policyBlock *hcl.Block) {
 func (p *Policy) defaultInit() {
 	p.Disabled = false
 	p.Severity = ERROR
+	p.Target = TARGET_RESOURCE
 }
