@@ -30,10 +30,10 @@ This will verify your Terraform plan against all the policies defined in the cur
 ## Screenshots
 
 In pretty mode, PTF displays a summary table that looks like the following:
-![summary table](../assets/summary_table.png)
+![summary table](assets/summary_table.png)
 
 If short mode is not activated, PTF will display information like the following:
-![summary table](../assets/policy_output_pretty.png)
+![summary table](assets/policy_output_pretty.png)
 
 If raw mode, is activated, PTF will output a raw json like the following:
 
