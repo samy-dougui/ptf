@@ -22,6 +22,7 @@ Here are the list of the features that will be implemented in the future:
 - Supports of pretty name for policy
 - For raw mode in CLI, supports of a flag "output" to output the raw results in a json file.
 - Refactoring of the pretty output (in particular for the attribute query with multiple attributes)
+- Support policy filtering on CLI
 
 ## Internal
 
