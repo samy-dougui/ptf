@@ -7,8 +7,3 @@ import (
 func main() {
 	cmd.Execute()
 }
-
-//func setUp() {
-//	logging.SetUpLogger()
-//	logging.SetUpDiagnosticLogger()
-//}
