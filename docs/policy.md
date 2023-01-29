@@ -1,7 +1,7 @@
 ---
 layout: default
 title: Policy
-nav_order: 3
+nav_order: 5
 has_children: false
 ---
 
@@ -29,6 +29,10 @@ A policy has other attributes:
 - `target`: the target of the policy (resource or meta) [**default to resource**]
 
 ## Policy schema
+
+To define a policy, we use HCL (Hashicorp Configuration language).
+
+A policy should be defined in a file with the `.hcl` extension and follow this schema:
 
 ```
 policy "policy_name" {

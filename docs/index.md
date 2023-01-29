@@ -30,10 +30,10 @@ To obtain your plan, you can follow this procedure:
 2. `terraform plan --out tfplan.binary`
 3. `terraform show -json tfplan.binary > tfplan.json`
 
-Once you have your Terraform plan, you can control if it's compliant by
-executing: `ptf control -p tfplan.json --chdir policies/`
+Once you have your Terraform plan, you can control if it's compliant by executing:
+`ptf control -p tfplan.json --chdir policies/`
 This will control that your `tfplan.json` respects all the policies defined in the directory `policies/`. To learn how
-to define a policy, head [here](./policy.md)
+to define a policy, head [here](./policy.md) and for more information about the CLI, head [here](./cli.md).
 
 If your checks are successful, you can then apply the changes: `terraform apply tfplan.binary`
 
@@ -54,9 +54,13 @@ for teams to create their own policies.
 
 ## Why not Sentinel ?
 
-Sentinel is, as the documentation
-says, `is a language and framework for policy built to be embedded in existing software to enable fine-grained, logic-based policy decisions. A policy describes under what circumstances certain behaviors are allowed. Sentinel is an enterprise feature of HashiCorp Consul, Nomad, Terraform, and Vault.`
+Sentinel is, as the documentation says:
+
+`is a language and framework for policy built to be embedded in existing software to enable fine-grained,
+logic-based policy decisions. A policy describes under what circumstances certain behaviors are allowed.
+Sentinel is an enterprise feature of HashiCorp Consul, Nomad, Terraform, and Vault.`
+
 It has been developed by Hashicorp, the creators of Terraform.
 
-Sentinel defines policy as code but the key thing here is hat it's an enterprise feature which makes the adoption of
-policy as code harder for companies that do not use Terraform Enterprise.
+Sentinel defines policy as code but the key thing here is hat it's an enterprise feature only which makes the adoption
+of policy as code harder for companies that do not use Terraform Enterprise.
