@@ -13,6 +13,7 @@ Here are the list of the features that will be implemented in the future:
 
 - Supports of variables in policies
 - Supports of HCL2 functions
+- Supports more filtering capabilities
 - Creation of meta-policy (policies on the metadata of the plan)
 - Creation of PTF Policy modules (with support for import)
 
