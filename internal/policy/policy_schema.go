@@ -27,6 +27,9 @@ var policyAttributes = []hcl.AttributeSchema{
 	{
 		Name: "disabled",
 	},
+	{
+		Name: "name",
+	},
 }
 
 var policyBlock = []hcl.BlockHeaderSchema{
