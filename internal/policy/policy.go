@@ -38,6 +38,9 @@ func (p *Policy) Init(policyBlock *hcl.Block) {
 
 	for _, attribute := range policyBody.Attributes {
 		switch attribute.Name {
+		case "name":
+			name, _ := attribute.Expr.Value(nil)
+			p.Name = name.AsString()
 		case "severity":
 			severity, _ := attribute.Expr.Value(nil)
 			p.Severity = severity.AsString()

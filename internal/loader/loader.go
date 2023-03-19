@@ -11,6 +11,7 @@ type Loader struct {
 }
 
 func (l *Loader) Init() {
+	// TODO: refacto using init function instead of struct method
 	l.Parser = hclparse.NewParser()
 	l.FileSystem = afero.Afero{
 		Fs: afero.NewOsFs(),

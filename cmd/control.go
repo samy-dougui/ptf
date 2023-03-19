@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"fmt"
 	"github.com/samy-dougui/ptf/internal/core"
 	"github.com/samy-dougui/ptf/internal/loader"
 	"github.com/samy-dougui/ptf/internal/policy"
@@ -9,6 +10,7 @@ import (
 	"github.com/spf13/cobra"
 	"log"
 	"os"
+	"path/filepath"
 )
 
 var (
@@ -17,6 +19,7 @@ var (
 	prettyPrint     bool
 	shortOutput     bool
 	failOnWarning   bool
+	outputFilePath  string
 )
 
 var ControlCmd = &cobra.Command{
@@ -35,6 +38,7 @@ func init() {
 	ControlCmd.Flags().BoolVarP(&prettyPrint, "pretty", "", true, "Print output of checks in a table.")
 	ControlCmd.Flags().BoolVarP(&shortOutput, "short", "", false, "The output is just the table (only work in pretty mode).")
 	ControlCmd.Flags().BoolVarP(&failOnWarning, "fail-on-warning", "", false, "Fail if there is at least one warning.")
+	ControlCmd.Flags().StringVarP(&outputFilePath, "output-file", "", ".", "Output file to store policies results.")
 	ControlCmd.MarkFlagRequired("plan")
 }
 
@@ -55,6 +59,16 @@ func run(planPath string, policiesDirPath string) {
 	resources, configuration := loader.LoadLocalResources(normalizePlanPath)
 	validationOutput := core.Validate(&policies, &resources, &configuration)
 	ux.Display(&validationOutput, prettyPrint, shortOutput)
+	if outputFilePath != "." {
+		normalizeOutputPath, err := utils.NormalizePath(outputFilePath)
+		if err != nil {
+			fmt.Println(err)
+		}
+		errOutput := writeOutput(normalizeOutputPath, &validationOutput)
+		if errOutput != nil {
+			fmt.Println(fmt.Sprintf("the following error happened while writing the output file: %v", errOutput))
+		}
+	}
 	handleExit(&validationOutput, failOnWarning)
 }
 
@@ -79,4 +93,18 @@ func handleExit(outputs *[]policy.Output, warningFailure bool) {
 		os.Exit(0)
 	}
 
+}
+
+func writeOutput(path string, policyOutput *[]policy.Output) error {
+	output, errJson := utils.MarshalJson(policyOutput)
+	if errJson != nil {
+		return errJson
+	}
+	errWriting := os.WriteFile(path, output, 0666)
+	if os.IsNotExist(errWriting) {
+		return fmt.Errorf("folder %s not found", filepath.Dir(path))
+	} else if errWriting != nil {
+		return errWriting
+	}
+	return nil
 }

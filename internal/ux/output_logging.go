@@ -1,10 +1,10 @@
 package ux
 
 import (
-	"encoding/json"
 	"fmt"
 	"github.com/jedib0t/go-pretty/v6/table"
 	"github.com/samy-dougui/ptf/internal/policy"
+	"github.com/samy-dougui/ptf/internal/utils"
 	"os"
 )
 
@@ -16,7 +16,7 @@ func Display(outputs *[]policy.Output, pretty bool, short bool) {
 	}
 }
 func rawDisplay(outputs *[]policy.Output) {
-	ans, _ := json.MarshalIndent(outputs, "", "  ")
+	ans, _ := utils.MarshalJson(outputs)
 	fmt.Println(string(ans))
 }
 
