@@ -11,6 +11,7 @@ policy "azurem_storage_account_network_rules" {
 }
 
 policy "azure_storage_container_name_pattern" {
+  name = "Azure storage account naming convention"
   filter {
     type = "azurerm_storage_container"
   }
@@ -20,5 +21,5 @@ policy "azure_storage_container_name_pattern" {
     values    = "([aA-zZ]+)_([aA-zZ]+)_([aA-zZ]+)"
   }
   severity = "warning"
-  disabled = true
+  disabled = false
 }
